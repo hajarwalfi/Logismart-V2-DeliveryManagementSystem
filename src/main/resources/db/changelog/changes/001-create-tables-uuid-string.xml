@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Table: Zone -->
+    <changeSet id="001-zone" author="logismart">
+        <createTable tableName="zone">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="postal_code" type="VARCHAR(10)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- Table: Sender Client -->
+    <changeSet id="002-sender-client" author="logismart">
+        <createTable tableName="sender_client">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="first_name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="VARCHAR(150)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="phone" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="address" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- Table: Recipient -->
+    <changeSet id="003-recipient" author="logismart">
+        <createTable tableName="recipient">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="first_name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="VARCHAR(150)"/>
+            <column name="phone" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="address" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- Table: Product -->
+    <changeSet id="004-product" author="logismart">
+        <createTable tableName="product">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(150)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="category" type="VARCHAR(100)"/>
+            <column name="weight" type="DECIMAL(10,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="price" type="DECIMAL(10,2)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- Table: Delivery Person -->
+    <changeSet id="005-delivery-person" author="logismart">
+        <createTable tableName="delivery_person">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="first_name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="phone" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="vehicle" type="VARCHAR(50)"/>
+            <column name="assigned_zone_id" type="VARCHAR(36)">
+                <constraints foreignKeyName="fk_delivery_person_zone" references="zone(id)"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- Table: Parcel -->
+    <changeSet id="006-parcel" author="logismart">
+        <createTable tableName="parcel">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="weight" type="DECIMAL(10,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="priority" type="VARCHAR(20)" defaultValue="NORMAL">
+                <constraints nullable="false"/>
+            </column>
+            <column name="destination_city" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="delivery_person_id" type="VARCHAR(36)">
+                <constraints foreignKeyName="fk_parcel_delivery_person" references="delivery_person(id)"/>
+            </column>
+            <column name="sender_client_id" type="VARCHAR(36)">
+                <constraints nullable="false" foreignKeyName="fk_parcel_sender_client" references="sender_client(id)"/>
+            </column>
+            <column name="recipient_id" type="VARCHAR(36)">
+                <constraints nullable="false" foreignKeyName="fk_parcel_recipient" references="recipient(id)"/>
+            </column>
+            <column name="zone_id" type="VARCHAR(36)">
+                <constraints foreignKeyName="fk_parcel_zone" references="zone(id)"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Table: Delivery History -->
+    <changeSet id="007-delivery-history" author="logismart">
+        <createTable tableName="delivery_history">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="parcel_id" type="VARCHAR(36)">
+                <constraints nullable="false" foreignKeyName="fk_history_parcel" references="parcel(id)" deleteCascade="true"/>
+            </column>
+            <column name="status" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="changed_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="comment" type="TEXT"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Table: Parcel Product -->
+    <changeSet id="008-parcel-product" author="logismart">
+        <createTable tableName="parcel_product">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="parcel_id" type="VARCHAR(36)">
+                <constraints nullable="false" foreignKeyName="fk_parcel_product_parcel" references="parcel(id)" deleteCascade="true"/>
+            </column>
+            <column name="product_id" type="VARCHAR(36)">
+                <constraints nullable="false" foreignKeyName="fk_parcel_product_product" references="product(id)"/>
+            </column>
+            <column name="quantity" type="INT" defaultValue="1">
+                <constraints nullable="false"/>
+            </column>
+            <column name="price" type="DECIMAL(10,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="added_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+        <addUniqueConstraint tableName="parcel_product" columnNames="parcel_id, product_id" constraintName="uk_parcel_product"/>
+    </changeSet>
+
+    <!-- Indexes for performance -->
+    <changeSet id="009-indexes" author="logismart">
+        <createIndex tableName="parcel" indexName="idx_parcel_status">
+            <column name="status"/>
+        </createIndex>
+        <createIndex tableName="parcel" indexName="idx_parcel_priority">
+            <column name="priority"/>
+        </createIndex>
+        <createIndex tableName="parcel" indexName="idx_parcel_city">
+            <column name="destination_city"/>
+        </createIndex>
+        <createIndex tableName="delivery_history" indexName="idx_history_parcel">
+            <column name="parcel_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
