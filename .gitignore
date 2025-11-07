@@ -12,6 +12,12 @@ target/
 .settings
 .springBeans
 .sts4-cache
+.mvnw.cmd
+.gitignore
+.gitattributes
+.LogismartV2.iml
+!**/src/main/resources/application.yml
+!**/src/main/resources/application.properties
 
 ### IntelliJ IDEA ###
 .idea
