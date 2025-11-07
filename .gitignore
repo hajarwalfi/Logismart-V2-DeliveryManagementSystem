@@ -18,7 +18,7 @@ target/
 .LogismartV2.iml
 !**/src/main/resources/application.yml
 !**/src/main/resources/application.properties
-
+.claude
 ### IntelliJ IDEA ###
 .idea
 *.iws
