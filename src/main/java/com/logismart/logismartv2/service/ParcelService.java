@@ -116,6 +116,7 @@ public class ParcelService {
     public List<ParcelResponseDTO> findAll() {
         log.info("Finding all parcels");
         List<Parcel> parcels = parcelRepository.findAll();
+
         return parcelMapper.toResponseDTOList(parcels);
     }
 
@@ -465,4 +466,5 @@ public class ParcelService {
         
         return deliveryHistoryMapper.toResponseDTOList(history);
     }
+
 }
