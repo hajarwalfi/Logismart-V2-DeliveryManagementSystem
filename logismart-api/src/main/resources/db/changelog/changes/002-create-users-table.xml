@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="002-create-users-table" author="logismart">
+        <comment>Create users table for authentication</comment>
+
+        <createTable tableName="users">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="username" type="VARCHAR(100)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="password" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Add indexes -->
+        <createIndex indexName="idx_users_username" tableName="users">
+            <column name="username"/>
+        </createIndex>
+
+        <!-- Insert default users for testing (passwords are BCrypt hashed) -->
+        <insert tableName="users">
+            <column name="id" value="550e8400-e29b-41d4-a716-446655440001"/>
+            <column name="username" value="manager"/>
+            <!-- Password: manager123 (BCrypt hash) -->
+            <column name="password" value="$2a$10$YWZ8pZvBqYXjK8ZKJXxXv.xHw2/v4MhKOYvLqKJvK6Xv7FN8ZY8Yu"/>
+            <column name="role" value="ROLE_MANAGER"/>
+        </insert>
+
+        <insert tableName="users">
+            <column name="id" value="550e8400-e29b-41d4-a716-446655440002"/>
+            <column name="username" value="livreur"/>
+            <!-- Password: livreur123 (BCrypt hash) -->
+            <column name="password" value="$2a$10$YWZ8pZvBqYXjK8ZKJXxXv.xHw2/v4MhKOYvLqKJvK6Xv7FN8ZY8Yu"/>
+            <column name="role" value="ROLE_LIVREUR"/>
+        </insert>
+
+        <insert tableName="users">
+            <column name="id" value="550e8400-e29b-41d4-a716-446655440003"/>
+            <column name="username" value="client"/>
+            <!-- Password: client123 (BCrypt hash) -->
+            <column name="password" value="$2a$10$YWZ8pZvBqYXjK8ZKJXxXv.xHw2/v4MhKOYvLqKJvK6Xv7FN8ZY8Yu"/>
+            <column name="role" value="ROLE_CLIENT"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>
