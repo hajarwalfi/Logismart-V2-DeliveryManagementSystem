@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,6 +22,7 @@ import java.util.List;
 @RequestMapping("/api/delivery-history")
 @RequiredArgsConstructor
 @Slf4j
+@PreAuthorize("hasRole('MANAGER')")
 @Tag(name = "Delivery History", description = "APIs for tracking parcel status history (audit trail)")
 public class DeliveryHistoryController {
 
@@ -168,5 +170,28 @@ public class DeliveryHistoryController {
         log.info("REST: Counting deliveries completed today");
         Long count = deliveryHistoryService.countDeliveriesToday();
         return ResponseEntity.ok(count);
+    }
+
+
+
+    @GetMapping("/my-history")
+    @PreAuthorize("hasRole('LIVREUR')")
+    @Operation(
+            summary = "Get my delivery history (delivery person only)",
+            description = "Retrieves the complete delivery history for all parcels assigned to the authenticated delivery person. " +
+                    "Shows the chronological timeline of status changes for all their parcels."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "History retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Delivery person profile not found")
+    })
+    public ResponseEntity<List<DeliveryHistoryResponseDTO>> getMyHistory(
+            org.springframework.security.core.Authentication authentication) {
+        log.info("REST: Getting delivery history for delivery person: {}", authentication.getName());
+
+        String userId = ((com.logismart.security.entity.User) authentication.getPrincipal()).getId();
+        List<DeliveryHistoryResponseDTO> history = deliveryHistoryService.findMyHistoryForDeliveryPerson(userId);
+
+        return ResponseEntity.ok(history);
     }
 }

@@ -54,4 +54,9 @@ public interface DeliveryPersonRepository extends JpaRepository<DeliveryPerson, 
 
     @Query("SELECT dp FROM DeliveryPerson dp LEFT JOIN Parcel p ON p.deliveryPerson.id = dp.id AND p.status = 'DELIVERED' GROUP BY dp.id ORDER BY COUNT(p) DESC")
     List<DeliveryPerson> findTopPerformers();
+
+    /**
+     * Find delivery person by user ID (for role-based access control)
+     */
+    Optional<DeliveryPerson> findByUserId(String userId);
 }

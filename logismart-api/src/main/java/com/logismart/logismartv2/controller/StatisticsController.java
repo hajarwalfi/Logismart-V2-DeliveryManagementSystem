@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +21,7 @@ import java.util.List;
 @RequestMapping("/api/statistics")
 @RequiredArgsConstructor
 @Slf4j
+@PreAuthorize("hasRole('MANAGER')")
 @Tag(name = "Statistics & Analytics", description = "APIs for system statistics and analytics")
 public class StatisticsController {
 

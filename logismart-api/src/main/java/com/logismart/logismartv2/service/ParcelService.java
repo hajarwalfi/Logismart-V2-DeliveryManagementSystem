@@ -453,18 +453,138 @@ public class ParcelService {
     public List<DeliveryHistoryResponseDTO> getParcelHistory(String parcelId) {
         log.info("Fetching delivery history for parcel ID: {}", parcelId);
 
-        
+
         if (!parcelRepository.existsById(parcelId)) {
             throw new ResourceNotFoundException("Parcel", "id", parcelId);
         }
 
-        
+
         List<DeliveryHistory> history = deliveryHistoryRepository.findByParcelIdOrderByChangedAtAsc(parcelId);
 
         log.info("Found {} history entries for parcel ID: {}", history.size(), parcelId);
 
-        
+
         return deliveryHistoryMapper.toResponseDTOList(history);
+    }
+
+    /**
+     * Get parcels assigned to a delivery person (ROLE_LIVREUR)
+     */
+    @Transactional(readOnly = true)
+    public List<ParcelResponseDTO> findMyParcelsForDeliveryPerson(String userId) {
+        log.info("Finding parcels for delivery person with user ID: {}", userId);
+
+        // Find the delivery person by user ID
+        DeliveryPerson deliveryPerson = deliveryPersonRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("DeliveryPerson", "userId", userId));
+
+        // Get all parcels assigned to this delivery person
+        List<Parcel> parcels = parcelRepository.findByDeliveryPersonId(deliveryPerson.getId());
+
+        log.info("Found {} parcels for delivery person ID: {}", parcels.size(), deliveryPerson.getId());
+
+        return parcelMapper.toResponseDTOList(parcels);
+    }
+
+    /**
+     * Get parcels created by a client (ROLE_CLIENT)
+     */
+    @Transactional(readOnly = true)
+    public List<ParcelResponseDTO> findMyParcelsForClient(String userId) {
+        log.info("Finding parcels for client with user ID: {}", userId);
+
+        // Find the sender client by user ID
+        SenderClient senderClient = senderClientRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("SenderClient", "userId", userId));
+
+        // Get all parcels sent by this client
+        List<Parcel> parcels = parcelRepository.findBySenderClientId(senderClient.getId());
+
+        log.info("Found {} parcels for sender client ID: {}", parcels.size(), senderClient.getId());
+
+        return parcelMapper.toResponseDTOList(parcels);
+    }
+
+    /**
+     * Update parcel status (for ROLE_LIVREUR - restricted to their own parcels)
+     */
+    public ParcelResponseDTO updateParcelStatusForDeliveryPerson(String parcelId, ParcelStatus newStatus, String userId) {
+        log.info("Delivery person (user ID: {}) attempting to update parcel {} to status {}", userId, parcelId, newStatus);
+
+        // Find the delivery person
+        DeliveryPerson deliveryPerson = deliveryPersonRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("DeliveryPerson", "userId", userId));
+
+        // Find the parcel
+        Parcel parcel = parcelRepository.findById(parcelId)
+                .orElseThrow(() -> new ResourceNotFoundException("Parcel", "id", parcelId));
+
+        // Verify that the parcel is assigned to this delivery person
+        if (parcel.getDeliveryPerson() == null || !parcel.getDeliveryPerson().getId().equals(deliveryPerson.getId())) {
+            throw new BadRequestException("You can only update status for parcels assigned to you");
+        }
+
+        // Update the status
+        ParcelStatus oldStatus = parcel.getStatus();
+        parcel.setStatus(newStatus);
+        Parcel updatedParcel = parcelRepository.save(parcel);
+
+        // Create delivery history entry
+        DeliveryHistory history = new DeliveryHistory();
+        history.setParcel(updatedParcel);
+        history.setStatus(newStatus);
+        history.setChangedAt(LocalDateTime.now());
+        history.setComment(String.format("Status updated from %s to %s by delivery person", oldStatus, newStatus));
+        deliveryHistoryRepository.save(history);
+
+        log.info("Parcel {} status updated from {} to {} by delivery person {}",
+                parcelId, oldStatus, newStatus, deliveryPerson.getId());
+
+        return parcelMapper.toResponseDTO(updatedParcel);
+    }
+
+    /**
+     * Verify if a parcel belongs to a client (for access control)
+     */
+    @Transactional(readOnly = true)
+    public boolean isParcelOwnedByClient(String parcelId, String userId) {
+        SenderClient senderClient = senderClientRepository.findByUserId(userId)
+                .orElse(null);
+
+        if (senderClient == null) {
+            return false;
+        }
+
+        Parcel parcel = parcelRepository.findById(parcelId)
+                .orElse(null);
+
+        if (parcel == null) {
+            return false;
+        }
+
+        return parcel.getSenderClient().getId().equals(senderClient.getId());
+    }
+
+    /**
+     * Verify if a parcel is assigned to a delivery person (for access control)
+     */
+    @Transactional(readOnly = true)
+    public boolean isParcelAssignedToDeliveryPerson(String parcelId, String userId) {
+        DeliveryPerson deliveryPerson = deliveryPersonRepository.findByUserId(userId)
+                .orElse(null);
+
+        if (deliveryPerson == null) {
+            return false;
+        }
+
+        Parcel parcel = parcelRepository.findById(parcelId)
+                .orElse(null);
+
+        if (parcel == null || parcel.getDeliveryPerson() == null) {
+            return false;
+        }
+
+        return parcel.getDeliveryPerson().getId().equals(deliveryPerson.getId());
     }
 
 }

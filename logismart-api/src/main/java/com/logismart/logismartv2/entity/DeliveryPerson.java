@@ -36,8 +36,13 @@ public class DeliveryPerson {
     @Column(name = "phone", nullable = false, length = 20)
     private String phone;
 
-    
-    
+    /**
+     * Link to the User entity for authentication
+     * This allows us to identify which user account belongs to this delivery person
+     */
+    @Column(name = "user_id", length = 36)
+    private String userId;
+
     @Size(max = 50, message = "Vehicle information must not exceed 50 characters")
     @Column(name = "vehicle", nullable = true, length = 50)
     private String vehicle;

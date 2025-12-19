@@ -62,7 +62,7 @@ public class AuthenticationController {
         String jwtToken = jwtService.generateToken(userDetails);
 
         // Get user role
-        String role = ((User) userDetails).getRole().name();
+        String role = ((User) userDetails).getRole().getName();
 
         log.info("User {} authenticated successfully with role {}", loginRequest.getUsername(), role);
 

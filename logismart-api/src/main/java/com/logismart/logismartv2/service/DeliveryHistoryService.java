@@ -3,10 +3,12 @@ package com.logismart.logismartv2.service;
 import com.logismart.logismartv2.dto.deliveryhistory.DeliveryHistoryCreateDTO;
 import com.logismart.logismartv2.dto.deliveryhistory.DeliveryHistoryResponseDTO;
 import com.logismart.logismartv2.entity.DeliveryHistory;
+import com.logismart.logismartv2.entity.DeliveryPerson;
 import com.logismart.logismartv2.entity.Parcel;
 import com.logismart.logismartv2.exception.ResourceNotFoundException;
 import com.logismart.logismartv2.mapper.DeliveryHistoryMapper;
 import com.logismart.logismartv2.repository.DeliveryHistoryRepository;
+import com.logismart.logismartv2.repository.DeliveryPersonRepository;
 import com.logismart.logismartv2.repository.ParcelRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -24,6 +27,7 @@ public class DeliveryHistoryService {
     private final DeliveryHistoryRepository deliveryHistoryRepository;
     private final DeliveryHistoryMapper deliveryHistoryMapper;
     private final ParcelRepository parcelRepository;
+    private final DeliveryPersonRepository deliveryPersonRepository;
 
     public DeliveryHistoryResponseDTO create(DeliveryHistoryCreateDTO dto) {
         log.info("Creating delivery history entry for parcel ID: {} with status: {}",
@@ -124,5 +128,30 @@ public class DeliveryHistoryService {
     public Long countDeliveriesToday() {
         log.info("Counting deliveries completed today");
         return deliveryHistoryRepository.countDeliveriesToday();
+    }
+
+    /**
+     * Get delivery history for a delivery person (ROLE_LIVREUR)
+     * Returns history of all parcels assigned to this delivery person
+     */
+    @Transactional(readOnly = true)
+    public List<DeliveryHistoryResponseDTO> findMyHistoryForDeliveryPerson(String userId) {
+        log.info("Finding delivery history for delivery person with user ID: {}", userId);
+
+        // Find the delivery person by user ID
+        DeliveryPerson deliveryPerson = deliveryPersonRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("DeliveryPerson", "userId", userId));
+
+        // Get all parcels assigned to this delivery person
+        List<Parcel> parcels = parcelRepository.findByDeliveryPersonId(deliveryPerson.getId());
+
+        // Get all delivery history for these parcels
+        List<DeliveryHistory> allHistory = parcels.stream()
+                .flatMap(parcel -> deliveryHistoryRepository.findByParcelIdOrderByChangedAtAsc(parcel.getId()).stream())
+                .collect(Collectors.toList());
+
+        log.info("Found {} history entries for delivery person ID: {}", allHistory.size(), deliveryPerson.getId());
+
+        return deliveryHistoryMapper.toResponseDTOList(allHistory);
     }
 }

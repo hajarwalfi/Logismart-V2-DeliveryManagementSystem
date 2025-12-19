@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- ============================================= -->
+    <!-- Remove manually inserted roles, users, and permissions -->
+    <!-- These will be auto-generated with UUIDs by DataInitializer -->
+    <!-- ============================================= -->
+    <changeSet id="013-remove-manual-test-data" author="logismart">
+        <comment>Remove manually inserted test data - will be auto-generated with proper UUIDs by DataInitializer</comment>
+
+        <!-- Delete test users (these have manual IDs) -->
+        <delete tableName="users">
+            <where>id IN ('admin-user-001', 'manager-user-001', 'livreur-user-001', 'client-user-001')</where>
+        </delete>
+
+        <!-- Delete role-permission assignments -->
+        <delete tableName="role_permissions">
+            <where>role_id IN ('role-admin', 'role-manager', 'role-livreur', 'role-client')</where>
+        </delete>
+
+        <!-- Delete manually inserted roles (these have manual IDs) -->
+        <delete tableName="roles">
+            <where>id IN ('role-admin', 'role-manager', 'role-livreur', 'role-client')</where>
+        </delete>
+
+        <!-- Delete manually inserted permissions (these have manual IDs) -->
+        <delete tableName="permissions">
+            <where>id IN (
+                'perm-parcel-create', 'perm-parcel-read', 'perm-parcel-update', 'perm-parcel-delete',
+                'perm-zone-manage', 'perm-stats-view', 'perm-delivery-manage', 'perm-permission-manage'
+            )</where>
+        </delete>
+    </changeSet>
+
+</databaseChangeLog>

@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,6 +30,7 @@ public class ZoneController {
     private final ZoneService zoneService;
 
     @PostMapping
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
             summary = "Create a new zone",
             description = "Creates a new delivery zone with name, postal code, and description"
@@ -46,6 +48,7 @@ public class ZoneController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
             summary = "Get zone by ID",
             description = "Retrieves a zone by its unique identifier"
@@ -63,6 +66,7 @@ public class ZoneController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
             summary = "Get all zones",
             description = "Retrieves a list of all delivery zones"
@@ -77,6 +81,7 @@ public class ZoneController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
             summary = "Update a zone",
             description = "Updates an existing zone's information"
@@ -101,6 +106,7 @@ public class ZoneController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
             summary = "Delete a zone",
             description = "Deletes a zone by its ID"
@@ -118,6 +124,7 @@ public class ZoneController {
     }
 
     @GetMapping("/search")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
             summary = "Search zones by name",
             description = "Searches for zones by name (case-insensitive)"
@@ -134,6 +141,7 @@ public class ZoneController {
     }
 
     @GetMapping("/by-name/{name}")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
             summary = "Get zone by name",
             description = "Retrieves a zone by its exact name"
@@ -151,6 +159,7 @@ public class ZoneController {
     }
 
     @GetMapping("/by-postal-code/{postalCode}")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
             summary = "Get zone by postal code",
             description = "Retrieves a zone by its postal code"
@@ -168,6 +177,7 @@ public class ZoneController {
     }
 
     @GetMapping("/{id}/delivery-persons/count")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
             summary = "Count delivery persons in zone",
             description = "Returns the number of delivery persons assigned to this zone"
@@ -185,6 +195,7 @@ public class ZoneController {
     }
 
     @GetMapping("/{id}/parcels/count")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
             summary = "Count parcels in zone",
             description = "Returns the number of parcels in this zone"
@@ -202,6 +213,7 @@ public class ZoneController {
     }
 
     @GetMapping("/{id}/stats")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
             summary = "Get zone statistics",
             description = "US-12: Calculates total parcels, total weight, in-transit parcels, delivered parcels, " +

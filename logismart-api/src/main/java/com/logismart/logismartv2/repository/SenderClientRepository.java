@@ -35,4 +35,9 @@ public interface SenderClientRepository extends JpaRepository<SenderClient, Stri
 
     @Query("SELECT sc FROM SenderClient sc LEFT JOIN Parcel p ON p.senderClient.id = sc.id GROUP BY sc.id ORDER BY COUNT(p) DESC")
     List<SenderClient> findTopSendersByParcelCount();
+
+    /**
+     * Find sender client by user ID (for role-based access control)
+     */
+    Optional<SenderClient> findByUserId(String userId);
 }

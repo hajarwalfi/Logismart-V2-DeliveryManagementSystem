@@ -10,7 +10,9 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "users")
@@ -30,13 +32,38 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    /**
+     * User's role in the system
+     * User inherits all permissions from this role
+     * PRD: User gets permissions via Role
+     */
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "role_id", nullable = false)
     private Role role;
 
+    /**
+     * Get authorities from role's permissions
+     * PRD Compliance: "Role possède un ensemble de permissions"
+     * User inherits permissions from their role
+     */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(role.name()));
+        Set<GrantedAuthority> authorities = new HashSet<>();
+
+        // Add role name as authority (for @PreAuthorize("hasRole('...')"))
+        if (role != null) {
+            authorities.add(new SimpleGrantedAuthority(role.getName()));
+
+            // Add all permissions from the role
+            if (role.getPermissions() != null) {
+                authorities.addAll(role.getPermissions().stream()
+                        .filter(Permission::getEnabled)
+                        .map(permission -> new SimpleGrantedAuthority(permission.getName()))
+                        .collect(Collectors.toSet()));
+            }
+        }
+
+        return authorities;
     }
 
     @Override

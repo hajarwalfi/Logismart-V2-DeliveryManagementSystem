@@ -6,6 +6,7 @@ import com.logismart.logismartv2.dto.parcel.ParcelResponseDTO;
 import com.logismart.logismartv2.dto.parcel.ParcelUpdateDTO;
 import com.logismart.logismartv2.entity.ParcelPriority;
 import com.logismart.logismartv2.entity.ParcelStatus;
+import com.logismart.logismartv2.exception.BadRequestException;
 import com.logismart.logismartv2.service.ParcelService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -57,6 +58,7 @@ public class ParcelController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('MANAGER', 'CLIENT')")
     @Operation(
             summary = "Get parcel by ID",
             description = "Retrieves a parcel by its unique identifier with all relationships loaded"
@@ -74,6 +76,7 @@ public class ParcelController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
             summary = "Get all parcels with pagination",
             description = "Retrieves a paginated list of all parcels. " +
@@ -94,6 +97,7 @@ public class ParcelController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
             summary = "Update a parcel",
             description = "Updates parcel information (description, weight, priority, destinationCity), " +
@@ -120,6 +124,7 @@ public class ParcelController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
             summary = "Delete a parcel",
             description = "Deletes a parcel (cascades to products and history)"
@@ -136,9 +141,8 @@ public class ParcelController {
         return ResponseEntity.noContent().build();
     }
 
-    
-
     @GetMapping("/status/{status}")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
             summary = "Get parcels by status",
             description = "Retrieves all parcels with a specific status"
@@ -155,6 +159,7 @@ public class ParcelController {
     }
 
     @GetMapping("/priority/{priority}")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
             summary = "Get parcels by priority",
             description = "Retrieves all parcels with a specific priority level"
@@ -171,6 +176,7 @@ public class ParcelController {
     }
 
     @GetMapping("/search")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
             summary = "Advanced parcel search with pagination",
             description = "Search parcels with multiple optional filters: status, priority, zoneId, " +
@@ -213,6 +219,7 @@ public class ParcelController {
     }
 
     @GetMapping("/filter")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
             summary = "Get parcels by status and priority",
             description = "Retrieves parcels matching both status and priority criteria. " +
@@ -232,6 +239,7 @@ public class ParcelController {
     }
 
     @GetMapping("/status/{status}/count")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
             summary = "Count parcels by status",
             description = "Returns the number of parcels with a specific status"
@@ -250,6 +258,7 @@ public class ParcelController {
     
 
     @GetMapping("/sender/{senderClientId}")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
             summary = "Get parcels by sender client",
             description = "Retrieves all parcels sent by a specific client"
@@ -267,6 +276,7 @@ public class ParcelController {
     }
 
     @GetMapping("/recipient/{recipientId}")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
             summary = "Get parcels by recipient",
             description = "Retrieves all parcels for a specific recipient"
@@ -284,6 +294,7 @@ public class ParcelController {
     }
 
     @GetMapping("/delivery-person/{deliveryPersonId}")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
             summary = "Get parcels by delivery person",
             description = "Retrieves all parcels assigned to a specific delivery person"
@@ -301,6 +312,7 @@ public class ParcelController {
     }
 
     @GetMapping("/zone/{zoneId}")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
             summary = "Get parcels by zone",
             description = "Retrieves all parcels in a specific delivery zone"
@@ -320,6 +332,7 @@ public class ParcelController {
     
 
     @GetMapping("/unassigned")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
             summary = "Get unassigned parcels",
             description = "Retrieves parcels not yet assigned to a delivery person"
@@ -334,6 +347,7 @@ public class ParcelController {
     }
 
     @GetMapping("/high-priority-pending")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
             summary = "Get high priority pending parcels",
             description = "Retrieves EXPRESS priority parcels (same/next day delivery) that are not yet delivered"
@@ -348,6 +362,7 @@ public class ParcelController {
     }
 
     @GetMapping("/city/{city}")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
             summary = "Get parcels by destination city",
             description = "Retrieves parcels going to a specific city (case-insensitive)"
@@ -364,6 +379,7 @@ public class ParcelController {
     }
 
     @GetMapping("/count")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
             summary = "Count total parcels",
             description = "Returns the total number of parcels in the system"
@@ -380,6 +396,7 @@ public class ParcelController {
     
 
     @GetMapping("/group-by/status")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
             summary = "Group parcels by status",
             description = "Returns a synthetic view of parcels grouped by status. " +
@@ -395,6 +412,7 @@ public class ParcelController {
     }
 
     @GetMapping("/group-by/priority")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
             summary = "Group parcels by priority",
             description = "Returns a synthetic view of parcels grouped by priority. " +
@@ -410,6 +428,7 @@ public class ParcelController {
     }
 
     @GetMapping("/group-by/zone")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
             summary = "Group parcels by zone",
             description = "Returns a synthetic view of parcels grouped by zone. " +
@@ -425,6 +444,7 @@ public class ParcelController {
     }
 
     @GetMapping("/group-by/city")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
             summary = "Group parcels by destination city",
             description = "Returns a synthetic view of parcels grouped by destination city. " +
@@ -442,6 +462,7 @@ public class ParcelController {
     
 
     @GetMapping("/{id}/history")
+    @PreAuthorize("hasAnyRole('MANAGER', 'CLIENT')")
     @Operation(
             summary = "Get parcel delivery history",
             description = "Retrieves the complete chronological timeline of all status changes for a parcel. " +
@@ -455,6 +476,116 @@ public class ParcelController {
             @Parameter(description = "Parcel ID", required = true)
             @PathVariable String id) {
         log.info("REST: Getting delivery history for parcel ID: {}", id);
+        List<DeliveryHistoryResponseDTO> history = parcelService.getParcelHistory(id);
+        return ResponseEntity.ok(history);
+    }
+
+
+
+    @GetMapping("/my-parcels")
+    @PreAuthorize("hasAnyRole('LIVREUR', 'CLIENT')")
+    @Operation(
+            summary = "Get my parcels (role-based)",
+            description = "Retrieves parcels based on the authenticated user's role: " +
+                    "LIVREUR: Returns parcels assigned to them. " +
+                    "CLIENT: Returns parcels they have sent."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Parcels retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "User profile not found")
+    })
+    public ResponseEntity<List<ParcelResponseDTO>> getMyParcels(
+            org.springframework.security.core.Authentication authentication) {
+        log.info("REST: Getting parcels for user: {}", authentication.getName());
+
+
+        var authorities = authentication.getAuthorities();
+        String userId = ((com.logismart.security.entity.User) authentication.getPrincipal()).getId();
+
+        List<ParcelResponseDTO> parcels;
+
+
+        if (authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_LIVREUR"))) {
+            log.info("User is LIVREUR, fetching assigned parcels");
+            parcels = parcelService.findMyParcelsForDeliveryPerson(userId);
+        } else if (authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_CLIENT"))) {
+            log.info("User is CLIENT, fetching sent parcels");
+            parcels = parcelService.findMyParcelsForClient(userId);
+        } else {
+            throw new BadRequestException("Invalid role for this endpoint");
+        }
+
+        return ResponseEntity.ok(parcels);
+    }
+
+    @PutMapping("/{id}/status")
+    @PreAuthorize("hasRole('LIVREUR')")
+    @Operation(
+            summary = "Update parcel status (delivery person only)",
+            description = "Allows a delivery person to update the status of a parcel assigned to them. " +
+                    "Only parcels assigned to the authenticated delivery person can be updated. " +
+                    "Automatically creates a delivery history entry."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Status updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Parcel not assigned to this delivery person"),
+            @ApiResponse(responseCode = "404", description = "Parcel not found")
+    })
+    public ResponseEntity<ParcelResponseDTO> updateParcelStatus(
+            @Parameter(description = "Parcel ID", required = true)
+            @PathVariable String id,
+            @Parameter(description = "New status", required = true)
+            @RequestParam ParcelStatus status,
+            org.springframework.security.core.Authentication authentication) {
+        log.info("REST: Delivery person updating parcel {} status to {}", id, status);
+
+        String userId = ((com.logismart.security.entity.User) authentication.getPrincipal()).getId();
+        ParcelResponseDTO updated = parcelService.updateParcelStatusForDeliveryPerson(id, status, userId);
+
+        return ResponseEntity.ok(updated);
+    }
+
+    @GetMapping("/{id}/tracking")
+    @PreAuthorize("hasAnyRole('MANAGER', 'CLIENT', 'LIVREUR')")
+    @Operation(
+            summary = "Track parcel (get history)",
+            description = "Retrieves the tracking information (delivery history) for a parcel. " +
+                    "Clients can track their own parcels, delivery persons can track assigned parcels, " +
+                    "and managers can track any parcel."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Tracking information retrieved successfully"),
+            @ApiResponse(responseCode = "403", description = "Access denied - parcel not owned by you"),
+            @ApiResponse(responseCode = "404", description = "Parcel not found")
+    })
+    public ResponseEntity<List<DeliveryHistoryResponseDTO>> trackParcel(
+            @Parameter(description = "Parcel ID", required = true)
+            @PathVariable String id,
+            org.springframework.security.core.Authentication authentication) {
+        log.info("REST: Tracking parcel ID: {} for user: {}", id, authentication.getName());
+
+        var authorities = authentication.getAuthorities();
+        String userId = ((com.logismart.security.entity.User) authentication.getPrincipal()).getId();
+
+
+        boolean hasAccess = authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_MANAGER"));
+
+
+        if (!hasAccess && authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_CLIENT"))) {
+            hasAccess = parcelService.isParcelOwnedByClient(id, userId);
+            if (!hasAccess) {
+                throw new BadRequestException("You can only track your own parcels");
+            }
+        }
+
+
+        if (!hasAccess && authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_LIVREUR"))) {
+            hasAccess = parcelService.isParcelAssignedToDeliveryPerson(id, userId);
+            if (!hasAccess) {
+                throw new BadRequestException("You can only track parcels assigned to you");
+            }
+        }
+
         List<DeliveryHistoryResponseDTO> history = parcelService.getParcelHistory(id);
         return ResponseEntity.ok(history);
     }

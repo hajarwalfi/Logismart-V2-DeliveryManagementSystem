@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="004-add-user-id-to-delivery-person" author="logismart">
+        <comment>Add user_id column to delivery_person table to link with users</comment>
+
+        <addColumn tableName="delivery_person">
+            <column name="user_id" type="VARCHAR(36)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+
+        <!-- Add foreign key constraint -->
+        <addForeignKeyConstraint
+                baseTableName="delivery_person"
+                baseColumnNames="user_id"
+                constraintName="fk_delivery_person_user"
+                referencedTableName="users"
+                referencedColumnNames="id"
+                onDelete="SET NULL"/>
+
+        <!-- Add unique constraint to ensure one user per delivery person -->
+        <addUniqueConstraint
+                tableName="delivery_person"
+                columnNames="user_id"
+                constraintName="uk_delivery_person_user_id"/>
+
+        <!-- Create index for performance -->
+        <createIndex tableName="delivery_person" indexName="idx_delivery_person_user_id">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="005-add-user-id-to-sender-client" author="logismart">
+        <comment>Add user_id column to sender_client table to link with users</comment>
+
+        <addColumn tableName="sender_client">
+            <column name="user_id" type="VARCHAR(36)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+
+        <!-- Add foreign key constraint -->
+        <addForeignKeyConstraint
+                baseTableName="sender_client"
+                baseColumnNames="user_id"
+                constraintName="fk_sender_client_user"
+                referencedTableName="users"
+                referencedColumnNames="id"
+                onDelete="SET NULL"/>
+
+        <!-- Add unique constraint to ensure one user per sender client -->
+        <addUniqueConstraint
+                tableName="sender_client"
+                columnNames="user_id"
+                constraintName="uk_sender_client_user_id"/>
+
+        <!-- Create index for performance -->
+        <createIndex tableName="sender_client" indexName="idx_sender_client_user_id">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Link existing test data -->
+    <changeSet id="006-link-test-users-to-entities" author="logismart">
+        <comment>Create test delivery person and sender client and link them to users</comment>
+
+        <!-- Insert test delivery person -->
+        <insert tableName="zone">
+            <column name="id" value="zone-001"/>
+            <column name="name" value="Zone Centre-Ville"/>
+            <column name="postal_code" value="75001"/>
+        </insert>
+
+        <insert tableName="delivery_person">
+            <column name="id" value="dp-livreur-001"/>
+            <column name="first_name" value="Jean"/>
+            <column name="last_name" value="Dupont"/>
+            <column name="phone" value="+33612345678"/>
+            <column name="vehicle" value="Scooter"/>
+            <column name="assigned_zone_id" value="zone-001"/>
+            <column name="user_id" value="550e8400-e29b-41d4-a716-446655440002"/><!-- livreur user -->
+        </insert>
+
+        <!-- Insert test sender client -->
+        <insert tableName="sender_client">
+            <column name="id" value="sc-client-001"/>
+            <column name="first_name" value="Marie"/>
+            <column name="last_name" value="Martin"/>
+            <column name="email" value="marie.martin@example.com"/>
+            <column name="phone" value="+33687654321"/>
+            <column name="address" value="15 Rue de la République, 75001 Paris"/>
+            <column name="user_id" value="550e8400-e29b-41d4-a716-446655440003"/><!-- client user -->
+        </insert>
+
+        <!-- Insert test recipient for parcels -->
+        <insert tableName="recipient">
+            <column name="id" value="recipient-001"/>
+            <column name="first_name" value="Pierre"/>
+            <column name="last_name" value="Durand"/>
+            <column name="email" value="pierre.durand@example.com"/>
+            <column name="phone" value="+33698765432"/>
+            <column name="address" value="42 Avenue des Champs-Élysées, 75008 Paris"/>
+        </insert>
+
+        <insert tableName="recipient">
+            <column name="id" value="recipient-002"/>
+            <column name="first_name" value="Sophie"/>
+            <column name="last_name" value="Leblanc"/>
+            <column name="email" value="sophie.leblanc@example.com"/>
+            <column name="phone" value="+33699887766"/>
+            <column name="address" value="8 Rue de Rivoli, 75004 Paris"/>
+        </insert>
+
+        <!-- Insert test product -->
+        <insert tableName="product">
+            <column name="id" value="product-001"/>
+            <column name="name" value="Document Standard"/>
+            <column name="category" value="Documents"/>
+            <column name="weight" value="0.5"/>
+            <column name="price" value="5.00"/>
+        </insert>
+
+        <!-- Insert test parcel for client -->
+        <insert tableName="parcel">
+            <column name="id" value="parcel-client-001"/>
+            <column name="description" value="Colis de test pour client"/>
+            <column name="weight" value="2.5"/>
+            <column name="status" value="CREATED"/>
+            <column name="priority" value="NORMAL"/>
+            <column name="destination_city" value="Paris"/>
+            <column name="sender_client_id" value="sc-client-001"/>
+            <column name="recipient_id" value="recipient-001"/>
+        </insert>
+
+        <!-- Insert test parcel for delivery person (assigned) -->
+        <insert tableName="parcel">
+            <column name="id" value="parcel-livreur-001"/>
+            <column name="description" value="Colis assigné au livreur"/>
+            <column name="weight" value="1.5"/>
+            <column name="status" value="IN_TRANSIT"/>
+            <column name="priority" value="URGENT"/>
+            <column name="destination_city" value="Paris"/>
+            <column name="sender_client_id" value="sc-client-001"/>
+            <column name="recipient_id" value="recipient-002"/>
+            <column name="delivery_person_id" value="dp-livreur-001"/>
+            <column name="zone_id" value="zone-001"/>
+        </insert>
+
+        <!-- Insert delivery history for the assigned parcel -->
+        <insert tableName="delivery_history">
+            <column name="id" value="history-001"/>
+            <column name="parcel_id" value="parcel-livreur-001"/>
+            <column name="status" value="CREATED"/>
+            <column name="comment" value="Colis créé"/>
+        </insert>
+
+        <insert tableName="delivery_history">
+            <column name="id" value="history-002"/>
+            <column name="parcel_id" value="parcel-livreur-001"/>
+            <column name="status" value="IN_TRANSIT"/>
+            <column name="comment" value="Colis en cours de livraison"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

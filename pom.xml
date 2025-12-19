@@ -31,7 +31,7 @@
         <jacoco.version>0.8.12</jacoco.version>
         <maven.site.version>3.12.1</maven.site.version>
         <sonar.host.url>http://127.0.0.1:9000/</sonar.host.url>
-        <sonar.login>squ_1be7f46720074fc38e238e1027c8b760855ea1d3</sonar.login>
+        <sonar.login>squ_a7e88686b0e34ab3b05db82dd5b18060fe21cd27</sonar.login>
         <jjwt.version>0.12.6</jjwt.version>
     </properties>
 

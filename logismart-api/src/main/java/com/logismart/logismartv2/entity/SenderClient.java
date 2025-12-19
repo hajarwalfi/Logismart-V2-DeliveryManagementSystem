@@ -48,6 +48,13 @@ public class SenderClient {
     @Column(name = "address", nullable = false, length = 255)
     private String address;
 
+    /**
+     * Link to the User entity for authentication
+     * This allows us to identify which user account belongs to this sender client
+     */
+    @Column(name = "user_id", length = 36)
+    private String userId;
+
     
     
     

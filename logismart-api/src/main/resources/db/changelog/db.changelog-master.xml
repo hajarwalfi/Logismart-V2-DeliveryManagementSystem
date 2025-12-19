@@ -11,4 +11,16 @@
     <!-- Security: Create users table for authentication -->
     <include file="db/changelog/changes/002-create-users-table.xml"/>
 
+    <!-- Fix user passwords with correct BCrypt hashes -->
+    <include file="db/changelog/changes/003-fix-user-passwords.xml"/>
+
+    <!-- Add user_id to entities for role-based access control -->
+    <include file="db/changelog/changes/004-add-user-id-to-entities.xml"/>
+
+    <!-- Create permissions system for dynamic access control -->
+    <include file="db/changelog/changes/005-create-permissions-system.xml"/>
+
+    <!-- Remove manual test data - will be auto-generated with UUIDs by DataInitializer -->
+    <include file="db/changelog/changes/006-remove-manual-data-for-auto-init.xml"/>
+
 </databaseChangeLog>

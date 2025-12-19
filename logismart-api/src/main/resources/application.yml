@@ -6,7 +6,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/Logismart-V2
     username: postgres
-    password: 123456789
+    password: BLISSFUL
     driver-class-name: org.postgresql.Driver
 
   # JPA/Hibernate Configuration

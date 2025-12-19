@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -23,6 +24,7 @@ import java.util.List;
 @RequestMapping("/api/parcel-products")
 @RequiredArgsConstructor
 @Slf4j
+@PreAuthorize("hasRole('MANAGER')")
 @Tag(name = "Parcel-Product Association", description = "APIs for managing products within parcels and sales analytics")
 public class ParcelProductController {
 
