@@ -21,6 +21,12 @@
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
+        <!-- Spring OAuth2 Client (for OAuth2 login with Google, Facebook, etc.) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-client</artifactId>
+        </dependency>
+
         <!-- Spring Web (for filters and controllers) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

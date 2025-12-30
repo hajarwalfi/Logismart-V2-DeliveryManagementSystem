@@ -29,8 +29,35 @@ public class User implements UserDetails {
     @Column(nullable = false, unique = true)
     private String username;
 
-    @Column(nullable = false)
+    @Column(unique = true)
+    private String email;
+
+    private String firstName;
+
+    private String lastName;
+
+    /**
+     * Password - nullable for OAuth2 users who don't have passwords
+     * Required for LOCAL authentication, null for OAuth2 providers
+     */
+    @Column(nullable = true)
     private String password;
+
+    /**
+     * Authentication provider (LOCAL, GOOGLE, FACEBOOK, APPLE, OKTA)
+     * Indicates how the user authenticated
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private AuthProvider provider = AuthProvider.LOCAL;
+
+    /**
+     * Provider-specific user ID
+     * Stores the unique identifier from OAuth2 provider (e.g., Google user ID)
+     * Null for LOCAL authentication
+     */
+    private String providerId;
 
     /**
      * User's role in the system

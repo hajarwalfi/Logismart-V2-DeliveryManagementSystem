@@ -1,0 +1,155 @@
+Accueil
+Promotion
+Javalution
+Tableau de bord
+Scénarios pédago.
+Briefs de la promo
+Ressources
+Rendus
+Suivi
+Brief
+Javalution
+
+Authentification OAuth2 & Social Login du SmartLogi Delivery System – v0.2.1
+Assigné
+fr
+
+NA
+Nafia Akdi
+créé : 21/12/25
+Authentification hybride JWT + OAuth2 (Social Login)
+Référentiels
+Compétences transversales
+[2023] Concepteur⋅rice développeur⋅se d'applications
+Contexte du projet
+Contexte du projet
+L’application SmartLogi Delivery Management System (SDMS) est une solution de gestion dédiée aux activités de livraison, utilisée par différents profils d’utilisateurs tels que les gestionnaires, les livreurs et les clients expéditeurs.
+
+Avec la croissance de l’activité et l’augmentation du nombre d’utilisateurs, SmartLogi souhaite faire évoluer les modalités d’accès à l’application afin d’améliorer l’expérience utilisateur et de s’aligner sur les usages des applications modernes. Certains utilisateurs privilégient une connexion avec des identifiants classiques, tandis que d’autres souhaitent utiliser des comptes existants largement répandus afin de faciliter et d’accélérer l’accès aux services, sans contrainte de création d’un nouveau compte spécifique.
+
+Dans ce contexte, l’objectif est d’enrichir les modes d’accès à SDMS tout en conservant une gestion cohérente et centralisée des comptes utilisateurs. Cette évolution vise à :
+
+proposer plusieurs modes de connexion adaptés aux différents profils et usages ;
+garantir une expérience d’authentification fluide, simple et sécurisée ;
+maintenir une gestion unifiée des droits d’accès aux fonctionnalités métier, indépendamment du mode de connexion choisi ;
+préparer l’application à une utilisation à grande échelle, notamment via des interfaces web et mobiles modernes.
+Cette évolution s’inscrit dans une démarche d’amélioration continue de la plateforme, en assurant fiabilité, sécurité et facilité d’usage, sans remettre en cause les mécanismes existants.
+
+Objectifs du projet
+L’objectif est de mettre en place une authentification hybride :
+
+Authentification classique : email / mot de passe → JWT
+Authentification OAuth2 : Google / Apple / Facebook → JWT interne généré par l’application, avec possibilité de s’appuyer sur un serveur d’identité externe (Okta).
+Ainsi, quelle que soit la méthode d’authentification utilisée, l’API SDMS continue de fonctionner de manière 100 % stateless, en s’appuyant exclusivement sur des Bearer JWT pour sécuriser les endpoints.
+
+Les objectifs spécifiques sont les suivants :
+
+ajouter une authentification OAuth2 avec des fournisseurs sociaux (Google, Apple, Facebook) ;
+conserver et réutiliser le mécanisme existant basé sur Spring Security et JWT stateless ;
+enregistrer ou mettre à jour les informations des utilisateurs OAuth2 en base de données ;
+générer un JWT interne identique à celui émis lors d’une authentification classique ;
+centraliser la sécurité de l’API autour des Bearer JWT ;
+préparer l’application à une intégration fluide avec des frontends Angular et React ;
+déployer l’application dans un environnement Docker multi-conteneurs.
+Utilisateurs concernés
+Gestionnaire logistique
+Livreur
+Client expéditeur
+Les rôles et permissions existants restent inchangés. Un utilisateur authentifié via OAuth2 se verra attribuer un rôle par défaut (ex. : CLIENT), modifiable ultérieurement par un administrateur.
+
+Fonctionnalités attendues
+Authentification classique (existante)
+Endpoint /auth/login
+Vérification email / mot de passe
+Génération d’un JWT stateless
+Sécurisation des endpoints /api/**
+Authentification OAuth2 (nouvelle)
+Connexion via : Google, Apple, Facebook (directement ou via Okta).
+Redirection OAuth2
+Récupération des informations utilisateur (email, nom, provider, providerId)
+Création ou mise à jour automatique de l’utilisateur en base
+Attribution d’un rôle par défaut
+Génération d’un JWT interne après authentification OAuth2
+Retour du token JWT
+Modèle métier – Évolutions
+User (mise à jour)
+id
+email
+nom
+prénom
+password (nullable pour OAuth2)
+provider (LOCAL, GOOGLE, APPLE, FACEBOOK, OKTA)
+providerId
+enabled
+Docker & Déploiement
+Docker
+Création d’un Dockerfile pour l’application Spring Boot
+Gestion des variables d’environnement
+Docker Compose
+Lancement multi-conteneurs : Backend Spring Boot, Base de données PostgreSQL
+Réseau et volumes Docker
+Exigences techniques
+Sécurité & Authentification
+Spring Security (SecurityFilterChain)
+JWT stateless
+OAuth2 Client avec Spring Security : Google, Apple, Facebook
+Serveur d’identité
+Utiliser un serveur d’authentification externe tel que Okta pour :
+centraliser la gestion des utilisateurs ;
+gérer les rôles et permissions ;
+faciliter l’intégration OAuth2 / OpenID Connect.
+L’utilisation de Okta ne modifie pas les fonctionnalités attendues et reste compatible avec le mécanisme JWT stateless existant.
+Modalités pédagogiques
+Projet individuel
+Durée : 5 jours
+Début : 22/12/2025
+Deadline : 26/12/2025
+Modalités d'évaluation
+Présentation (30 minutes) :
+- 5 minutes : démonstration
+- 5 minutes : explication technique
+- 10 minutes : mise en situation
+- 10 minutes : questions / réponses
+Livrables
+- Dépôt GitHub contenant :
+- Code source complet
+- Dockerfile et docker-compose.yml
+- README détaillant : flux JWT, flux OAuth2, lancement Docker
+- Swagger sécurisé
+- Collection Postman
+Critères de performance
+Authentification OAuth2 fonctionnelle et correctement intégrée.
+Génération d’un JWT interne après OAuth2.
+Sécurité 100 % stateless respectée.
+Endpoints protégés selon rôles et permissions.
+Dockerisation fonctionnelle.
+Code propre, structuré et lisible.
+Versioning Git clair et cohérent.
+Assignation
+Ce brief vous a été assigné.
+Lisez attentivement votre brief avant de débuter votre travail !
+
+Assignation individuelle
+Vous travaillez individuellement sur ce brief.
+Situation professionnelle
+Sécurisation et déploiement d'une solution web avec intégration continue
+Besoin visé ou problème rencontré
+Développer une solution web performante, évolutive et maintenable tout en garantissant une expérience utilisateur optimale, une compatibilité multi-plateforme et une réduction des temps de développement. Les défis incluent la gestion des dépendances, les problèmes de performance côté client/serveur et le respect des normes de développement durable et sécurisé.
+18 compétences visées
+Compétences visées
+C1. Planifier le travail à effectuer individuellement
+niveau 1, imiter
+niveau 2, adapter
+niveau 3, transposer
+C3. Définir le périmètre d’un problème rencontré en adoptant une démarche inductive
+niveau 1, imiter
+niveau 2, adapter
+niveau 3, transposer
+C4. Rechercher de façon méthodique une ou des solutions au problème rencontré
+niveau 1, imiter
+niveau 2, adapter
+niveau 3, transposer
+Afficher la totalité des compétences
+
+Accéder au contenu principal
+Simplonline - Brief

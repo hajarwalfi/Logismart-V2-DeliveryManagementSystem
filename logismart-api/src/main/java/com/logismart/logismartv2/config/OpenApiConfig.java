@@ -27,7 +27,7 @@ public class OpenApiConfig {
         productionServer.setDescription("Production Server (Future)");
 
         Contact contact = new Contact();
-        contact.setName("SmartLogi Development Team");
+        contact.setName("Logismart Development Team");
         contact.setEmail("dev@logismart.ma");
         contact.setUrl("https://logismart.ma");
 
@@ -35,7 +35,7 @@ public class OpenApiConfig {
                 .name("MIT License")
                 .url("https://opensource.org/licenses/MIT");
 
-        String description = "# SmartLogi Delivery Management System (SDMS)\n\n" +
+        String description = "# Logismart Delivery Management System (SDMS)\n\n" +
                 "RESTful API for managing package deliveries across Morocco.\n\n" +
                 "## 🔐 Authentication\n" +
                 "This API uses **JWT Bearer tokens** for authentication.\n\n" +
@@ -99,7 +99,7 @@ public class OpenApiConfig {
                 "- Docker + Docker Compose";
 
         Info info = new Info()
-                .title("SmartLogi Delivery Management System API")
+                .title("Logismart Delivery Management System API")
                 .version("v0.2.0")
                 .description(description)
                 .contact(contact)

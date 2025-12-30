@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="007-add-oauth2-fields" author="logismart">
+        <comment>Add OAuth2 authentication fields to users table</comment>
+
+        <!-- Add email field -->
+        <addColumn tableName="users">
+            <column name="email" type="VARCHAR(255)">
+                <constraints unique="true" nullable="true"/>
+            </column>
+        </addColumn>
+
+        <!-- Add first name field -->
+        <addColumn tableName="users">
+            <column name="first_name" type="VARCHAR(100)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+
+        <!-- Add last name field -->
+        <addColumn tableName="users">
+            <column name="last_name" type="VARCHAR(100)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+
+        <!-- Add provider field (LOCAL, GOOGLE, FACEBOOK, APPLE, OKTA) -->
+        <addColumn tableName="users">
+            <column name="provider" type="VARCHAR(20)" defaultValue="LOCAL">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <!-- Add provider ID field (unique identifier from OAuth2 provider) -->
+        <addColumn tableName="users">
+            <column name="provider_id" type="VARCHAR(255)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+
+        <!-- Make password nullable for OAuth2 users -->
+        <dropNotNullConstraint tableName="users" columnName="password" columnDataType="VARCHAR(255)"/>
+
+        <!-- Add index on email for faster OAuth2 lookups -->
+        <createIndex indexName="idx_users_email" tableName="users">
+            <column name="email"/>
+        </createIndex>
+
+        <!-- Add composite index on provider and provider_id for OAuth2 user lookups -->
+        <createIndex indexName="idx_users_provider_providerid" tableName="users">
+            <column name="provider"/>
+            <column name="provider_id"/>
+        </createIndex>
+
+        <!-- Update existing users to have LOCAL provider -->
+        <update tableName="users">
+            <column name="provider" value="LOCAL"/>
+            <where>provider IS NULL</where>
+        </update>
+
+    </changeSet>
+
+</databaseChangeLog>

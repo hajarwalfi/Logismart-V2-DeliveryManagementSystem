@@ -23,4 +23,7 @@
     <!-- Remove manual test data - will be auto-generated with UUIDs by DataInitializer -->
     <include file="db/changelog/changes/006-remove-manual-data-for-auto-init.xml"/>
 
+    <!-- Add OAuth2 authentication fields for hybrid authentication -->
+    <include file="db/changelog/changes/007-add-oauth2-fields.xml"/>
+
 </databaseChangeLog>
