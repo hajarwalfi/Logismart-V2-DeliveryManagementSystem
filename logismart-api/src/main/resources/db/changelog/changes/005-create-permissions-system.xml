@@ -1,0 +1,360 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- ============================================= -->
+    <!-- STEP 1: Create Roles Table                   -->
+    <!-- PRD: Role entity with permissions            -->
+    <!-- ============================================= -->
+    <changeSet id="005-create-roles-table" author="logismart">
+        <comment>Create roles table - PRD: Role possède un ensemble de permissions</comment>
+
+        <createTable tableName="roles">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="description" type="VARCHAR(255)"/>
+        </createTable>
+
+        <createIndex indexName="idx_roles_name" tableName="roles">
+            <column name="name"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ============================================= -->
+    <!-- STEP 2: Create Permissions Table             -->
+    <!-- ============================================= -->
+    <changeSet id="006-create-permissions-table" author="logismart">
+        <comment>Create permissions table for dynamic access control</comment>
+
+        <createTable tableName="permissions">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(100)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="resource" type="VARCHAR(50)"/>
+            <column name="action" type="VARCHAR(20)"/>
+            <column name="enabled" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex indexName="idx_permissions_name" tableName="permissions">
+            <column name="name"/>
+        </createIndex>
+
+        <createIndex indexName="idx_permissions_resource" tableName="permissions">
+            <column name="resource"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ============================================= -->
+    <!-- STEP 3: Create Role_Permissions Join Table   -->
+    <!-- PRD: "Role possède un ensemble de permissions" -->
+    <!-- ============================================= -->
+    <changeSet id="007-create-role-permissions-table" author="logismart">
+        <comment>PRD: Create role_permissions join table - Assigner permission à un rôle</comment>
+
+        <createTable tableName="role_permissions">
+            <column name="role_id" type="VARCHAR(36)">
+                <constraints nullable="false" foreignKeyName="fk_role_permissions_role" references="roles(id)" deleteCascade="true"/>
+            </column>
+            <column name="permission_id" type="VARCHAR(36)">
+                <constraints nullable="false" foreignKeyName="fk_role_permissions_permission" references="permissions(id)" deleteCascade="true"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey tableName="role_permissions" columnNames="role_id, permission_id"/>
+
+        <createIndex indexName="idx_role_permissions_role_id" tableName="role_permissions">
+            <column name="role_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_role_permissions_permission_id" tableName="role_permissions">
+            <column name="permission_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ============================================= -->
+    <!-- STEP 4: Modify Users Table                   -->
+    <!-- Change from enum role to role_id FK          -->
+    <!-- ============================================= -->
+    <changeSet id="008-modify-users-table-add-role-fk" author="logismart">
+        <comment>Modify users table to reference roles table with FK</comment>
+
+        <!-- Drop the old role enum column -->
+        <dropColumn tableName="users" columnName="role"/>
+
+        <!-- Add role_id foreign key column -->
+        <addColumn tableName="users">
+            <column name="role_id" type="VARCHAR(36)">
+                <constraints nullable="false" foreignKeyName="fk_users_role" references="roles(id)"/>
+            </column>
+        </addColumn>
+
+        <createIndex indexName="idx_users_role_id" tableName="users">
+            <column name="role_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ============================================= -->
+    <!-- STEP 5: Insert Default Permissions           -->
+    <!-- ============================================= -->
+    <changeSet id="009-insert-default-permissions" author="logismart">
+        <comment>Insert default permissions for the system</comment>
+
+        <!-- Parcel permissions -->
+        <insert tableName="permissions">
+            <column name="id" value="perm-parcel-create"/>
+            <column name="name" value="PARCEL_CREATE"/>
+            <column name="description" value="Create new parcels"/>
+            <column name="resource" value="PARCEL"/>
+            <column name="action" value="CREATE"/>
+            <column name="enabled" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-parcel-read"/>
+            <column name="name" value="PARCEL_READ"/>
+            <column name="description" value="View parcel information"/>
+            <column name="resource" value="PARCEL"/>
+            <column name="action" value="READ"/>
+            <column name="enabled" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-parcel-update"/>
+            <column name="name" value="PARCEL_UPDATE"/>
+            <column name="description" value="Update parcel information"/>
+            <column name="resource" value="PARCEL"/>
+            <column name="action" value="UPDATE"/>
+            <column name="enabled" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-parcel-delete"/>
+            <column name="name" value="PARCEL_DELETE"/>
+            <column name="description" value="Delete parcels"/>
+            <column name="resource" value="PARCEL"/>
+            <column name="action" value="DELETE"/>
+            <column name="enabled" valueBoolean="true"/>
+        </insert>
+
+        <!-- Zone permissions -->
+        <insert tableName="permissions">
+            <column name="id" value="perm-zone-manage"/>
+            <column name="name" value="ZONE_MANAGE"/>
+            <column name="description" value="Manage delivery zones"/>
+            <column name="resource" value="ZONE"/>
+            <column name="action" value="MANAGE"/>
+            <column name="enabled" valueBoolean="true"/>
+        </insert>
+
+        <!-- Statistics permissions -->
+        <insert tableName="permissions">
+            <column name="id" value="perm-stats-view"/>
+            <column name="name" value="STATISTICS_VIEW"/>
+            <column name="description" value="View system statistics"/>
+            <column name="resource" value="STATISTICS"/>
+            <column name="action" value="VIEW"/>
+            <column name="enabled" valueBoolean="true"/>
+        </insert>
+
+        <!-- Delivery Person permissions -->
+        <insert tableName="permissions">
+            <column name="id" value="perm-delivery-manage"/>
+            <column name="name" value="DELIVERY_PERSON_MANAGE"/>
+            <column name="description" value="Manage delivery persons"/>
+            <column name="resource" value="DELIVERY_PERSON"/>
+            <column name="action" value="MANAGE"/>
+            <column name="enabled" valueBoolean="true"/>
+        </insert>
+
+        <!-- Permission management (admin only) -->
+        <insert tableName="permissions">
+            <column name="id" value="perm-permission-manage"/>
+            <column name="name" value="PERMISSION_MANAGE"/>
+            <column name="description" value="Manage system permissions"/>
+            <column name="resource" value="PERMISSION"/>
+            <column name="action" value="MANAGE"/>
+            <column name="enabled" valueBoolean="true"/>
+        </insert>
+    </changeSet>
+
+    <!-- ============================================= -->
+    <!-- STEP 6: Insert Default Roles                 -->
+    <!-- PRD: 4 roles - ADMIN, MANAGER, LIVREUR, CLIENT -->
+    <!-- ============================================= -->
+    <changeSet id="010-insert-default-roles" author="logismart">
+        <comment>Insert 4 default roles as per PRD</comment>
+
+        <insert tableName="roles">
+            <column name="id" value="role-admin"/>
+            <column name="name" value="ROLE_ADMIN"/>
+            <column name="description" value="System administrator - full access including permission management"/>
+        </insert>
+
+        <insert tableName="roles">
+            <column name="id" value="role-manager"/>
+            <column name="name" value="ROLE_MANAGER"/>
+            <column name="description" value="Operations manager - full access to business operations"/>
+        </insert>
+
+        <insert tableName="roles">
+            <column name="id" value="role-livreur"/>
+            <column name="name" value="ROLE_LIVREUR"/>
+            <column name="description" value="Delivery person - access to assigned parcels"/>
+        </insert>
+
+        <insert tableName="roles">
+            <column name="id" value="role-client"/>
+            <column name="name" value="ROLE_CLIENT"/>
+            <column name="description" value="Client - access to own parcels"/>
+        </insert>
+    </changeSet>
+
+    <!-- ============================================= -->
+    <!-- STEP 7: Assign Permissions to Roles          -->
+    <!-- PRD: "Assigner une permission à un rôle"     -->
+    <!-- ============================================= -->
+    <changeSet id="011-assign-permissions-to-roles" author="logismart">
+        <comment>PRD: Assigner permissions aux rôles</comment>
+
+        <!-- ROLE_ADMIN: All permissions including permission management -->
+        <insert tableName="role_permissions">
+            <column name="role_id" value="role-admin"/>
+            <column name="permission_id" value="perm-parcel-create"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" value="role-admin"/>
+            <column name="permission_id" value="perm-parcel-read"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" value="role-admin"/>
+            <column name="permission_id" value="perm-parcel-update"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" value="role-admin"/>
+            <column name="permission_id" value="perm-parcel-delete"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" value="role-admin"/>
+            <column name="permission_id" value="perm-zone-manage"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" value="role-admin"/>
+            <column name="permission_id" value="perm-stats-view"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" value="role-admin"/>
+            <column name="permission_id" value="perm-delivery-manage"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" value="role-admin"/>
+            <column name="permission_id" value="perm-permission-manage"/>
+        </insert>
+
+        <!-- ROLE_MANAGER: All business permissions except permission management -->
+        <insert tableName="role_permissions">
+            <column name="role_id" value="role-manager"/>
+            <column name="permission_id" value="perm-parcel-create"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" value="role-manager"/>
+            <column name="permission_id" value="perm-parcel-read"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" value="role-manager"/>
+            <column name="permission_id" value="perm-parcel-update"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" value="role-manager"/>
+            <column name="permission_id" value="perm-parcel-delete"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" value="role-manager"/>
+            <column name="permission_id" value="perm-zone-manage"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" value="role-manager"/>
+            <column name="permission_id" value="perm-stats-view"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" value="role-manager"/>
+            <column name="permission_id" value="perm-delivery-manage"/>
+        </insert>
+
+        <!-- ROLE_LIVREUR: Parcel read and update only -->
+        <insert tableName="role_permissions">
+            <column name="role_id" value="role-livreur"/>
+            <column name="permission_id" value="perm-parcel-read"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" value="role-livreur"/>
+            <column name="permission_id" value="perm-parcel-update"/>
+        </insert>
+
+        <!-- ROLE_CLIENT: Parcel create and read only -->
+        <insert tableName="role_permissions">
+            <column name="role_id" value="role-client"/>
+            <column name="permission_id" value="perm-parcel-create"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" value="role-client"/>
+            <column name="permission_id" value="perm-parcel-read"/>
+        </insert>
+    </changeSet>
+
+    <!-- ============================================= -->
+    <!-- STEP 8: Create Test Users with Roles         -->
+    <!-- ============================================= -->
+    <changeSet id="012-create-test-users" author="logismart">
+        <comment>Create test users for each role</comment>
+
+        <!-- Admin user -->
+        <insert tableName="users">
+            <column name="id" value="admin-user-001"/>
+            <column name="username" value="admin"/>
+            <!-- Password: admin123 (BCrypt hash) -->
+            <column name="password" value="$2a$10$8jfZz1YqF0iUn0v4M.YrMeVPqXy.VN2F7/CvT6HY5fKfZz0xJZQKa"/>
+            <column name="role_id" value="role-admin"/>
+        </insert>
+
+        <!-- Manager user -->
+        <insert tableName="users">
+            <column name="id" value="manager-user-001"/>
+            <column name="username" value="manager"/>
+            <!-- Password: manager123 -->
+            <column name="password" value="$2a$10$8jfZz1YqF0iUn0v4M.YrMeVPqXy.VN2F7/CvT6HY5fKfZz0xJZQKa"/>
+            <column name="role_id" value="role-manager"/>
+        </insert>
+
+        <!-- Livreur user -->
+        <insert tableName="users">
+            <column name="id" value="livreur-user-001"/>
+            <column name="username" value="livreur"/>
+            <!-- Password: livreur123 -->
+            <column name="password" value="$2a$10$8jfZz1YqF0iUn0v4M.YrMeVPqXy.VN2F7/CvT6HY5fKfZz0xJZQKa"/>
+            <column name="role_id" value="role-livreur"/>
+        </insert>
+
+        <!-- Client user -->
+        <insert tableName="users">
+            <column name="id" value="client-user-001"/>
+            <column name="username" value="client"/>
+            <!-- Password: client123 -->
+            <column name="password" value="$2a$10$8jfZz1YqF0iUn0v4M.YrMeVPqXy.VN2F7/CvT6HY5fKfZz0xJZQKa"/>
+            <column name="role_id" value="role-client"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

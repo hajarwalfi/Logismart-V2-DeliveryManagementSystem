@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: logismart-postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME:-logismart_db}
+      POSTGRES_USER: ${DB_USER:-logismart}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Database password is required}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - logismart-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-logismart}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Logismart API Application
+  logismart-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: logismart-api
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    environment:
+      # Database Configuration
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-logismart_db}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER:-logismart}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:?Database password is required}
+
+      # JWT Configuration
+      JWT_SECRET: ${JWT_SECRET:?JWT secret is required}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+
+      # Liquibase Configuration
+      SPRING_LIQUIBASE_ENABLED: true
+
+      # Logging
+      LOGGING_LEVEL_ROOT: ${LOG_LEVEL:-INFO}
+      LOGGING_LEVEL_COM_LOGISMART: ${LOG_LEVEL_APP:-DEBUG}
+
+      # Application Profile
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - logismart-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+# Volumes for data persistence
+volumes:
+  postgres_data:
+    driver: local
+
+# Networks
+networks:
+  logismart-network:
+    driver: bridge
