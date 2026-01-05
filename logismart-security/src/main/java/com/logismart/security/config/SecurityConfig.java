@@ -1,6 +1,9 @@
 package com.logismart.security.config;
 
 import com.logismart.security.filter.JwtAuthenticationFilter;
+import com.logismart.security.handler.OAuth2AuthenticationFailureHandler;
+import com.logismart.security.handler.OAuth2AuthenticationSuccessHandler;
+import com.logismart.security.service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,7 +24,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfigurationSource;
 
 /**
- * Security configuration for JWT-based authentication
+ * Security configuration for hybrid JWT + OAuth2 authentication
+ * Supports both traditional username/password and OAuth2 social login
  */
 @Configuration
 @EnableWebSecurity
@@ -33,13 +37,11 @@ public class SecurityConfig {
     private final UserDetailsService userDetailsService;
     private final CorsConfigurationSource corsConfigurationSource;
 
-    /**
-     * Configure security filter chain
-     * - Disable CSRF (stateless)
-     * - Configure session management (stateless)
-     * - Define authorization rules
-     * - Add JWT authentication filter
-     */
+    // OAuth2 components
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
+    private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -54,6 +56,8 @@ public class SecurityConfig {
                         // Public endpoints
                         .requestMatchers(
                                 "/auth/**",
+                                "/oauth2/**",
+                                "/login/oauth2/**",
                                 "/swagger-ui/**",
                                 "/api-docs/**",
                                 "/v3/api-docs/**",
@@ -64,9 +68,22 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
 
-                // Configure session management (stateless)
+                // Configure OAuth2 Login
+                .oauth2Login(oauth2 -> oauth2
+                        // Custom OAuth2 user service
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(customOAuth2UserService)
+                        )
+                        // Success handler - generates JWT token
+                        .successHandler(oAuth2AuthenticationSuccessHandler)
+                        // Failure handler - handles errors
+                        .failureHandler(oAuth2AuthenticationFailureHandler)
+                )
+
+                // Configure session management
+                // Use IF_REQUIRED to allow sessions for OAuth2 flow while keeping JWT stateless
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                 )
 
                 // Set authentication provider

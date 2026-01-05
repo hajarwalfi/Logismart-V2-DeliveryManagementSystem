@@ -25,10 +25,75 @@ spring:
     change-log: classpath:db/changelog/db.changelog-master.xml
     enabled: true
 
+  # OAuth2 Client Configuration
+  security:
+    oauth2:
+      client:
+        registration:
+          # Google OAuth2
+          google:
+            client-id: 1034727477185-p70n96jch27h0m71ndqlfivdv8im0go3.apps.googleusercontent.com
+            client-secret: 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
+            scope:
+              - email
+              - profile
+#            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+
+          # Facebook OAuth2
+          facebook:
+            client-id: 3145739745598109
+            client-secret: 00101dbf9c72c2954ef290e4277d87af
+            scope:
+              - email
+              - public_profile
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+
+          # Apple OAuth2
+          apple:
+            client-id: ${APPLE_CLIENT_ID:your-apple-service-id}
+            client-secret: ${APPLE_CLIENT_SECRET:your-apple-client-secret}
+            scope:
+              - name
+              - email
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            authorization-grant-type: authorization_code
+            client-name: Apple
+
+          # Auth0 OAuth2 (configured as 'okta' for compatibility)
+          okta:
+            client-id: k6Rmpc6rXtR50ymJ6x58XqK5dUY6mEhn
+            client-secret: 2Rvf88RIpxBChQ-RVUJELhj70lMdQ2-dZmfLbj-8ZfcgGEMKWe_7N18ytZtIoUhn
+            scope:
+              - openid
+              - profile
+              - email
+            redirect-uri: "{baseUrl}/login/oauth2/code/okta"
+            authorization-grant-type: authorization_code
+            client-name: Auth0
+        provider:
+          apple:
+            authorization-uri: https://appleid.apple.com/auth/authorize
+            token-uri: https://appleid.apple.com/auth/token
+            user-info-uri: https://appleid.apple.com/auth/userinfo
+            jwk-set-uri: https://appleid.apple.com/auth/keys
+            user-name-attribute: sub
+          okta:
+            authorization-uri: https://walfi.us.auth0.com/authorize
+            token-uri: https://walfi.us.auth0.com/oauth/token
+            user-info-uri: https://walfi.us.auth0.com/userinfo
+            jwk-set-uri: https://walfi.us.auth0.com/.well-known/jwks.json
+            user-name-attribute: sub
 # JWT Configuration
 jwt:
   secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
   expiration: 86400000  # 24 hours in milliseconds
+
+# Application Configuration
+app:
+  oauth2:
+    # Frontend redirect URLs after OAuth2 authentication
+    frontend-redirect-url: http://localhost:4200/oauth2/redirect
+    frontend-error-url: http://localhost:4200/oauth2/error}
 
 # Swagger/OpenAPI Configuration
 springdoc:
