@@ -2,6 +2,7 @@ pipeline {
     agent any
 
     tools {
+        // Ces noms doivent correspondre EXACTEMENT à votre "Global Tool Configuration"
         maven 'Maven-3.9.1'
         jdk 'JDK17'
     }
@@ -29,25 +30,22 @@ pipeline {
             steps {
                 echo '🔄 Checking out source code...'
                 checkout scm
-                sh 'git log -1 --pretty=format:"%h - %an, %ar : %s"'
+                // Utilisation de double %% pour échapper le caractère sous Windows bat
+                bat 'git log -1 --pretty=format:"%%h - %%an, %%ar : %%s"'
             }
         }
 
         stage('Build') {
             steps {
                 echo '🔨 Building the application...'
-                sh '''
-                    mvn clean compile -B -DskipTests
-                '''
+                bat 'mvn clean compile -B -DskipTests'
             }
         }
 
         stage('Unit Tests') {
             steps {
                 echo '🧪 Running unit tests...'
-                sh '''
-                    mvn test -B
-                '''
+                bat 'mvn test -B'
             }
             post {
                 always {
@@ -59,9 +57,7 @@ pipeline {
         stage('Integration Tests') {
             steps {
                 echo '🔗 Running integration tests...'
-                sh '''
-                    mvn verify -B -DskipUnitTests
-                '''
+                bat 'mvn verify -B -DskipUnitTests'
             }
             post {
                 always {
@@ -73,9 +69,7 @@ pipeline {
         stage('Code Coverage') {
             steps {
                 echo '📊 Generating code coverage reports...'
-                sh '''
-                    mvn jacoco:report
-                '''
+                bat 'mvn jacoco:report'
             }
             post {
                 always {
@@ -92,13 +86,9 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 echo '🔍 Running SonarQube analysis...'
+                // Assurez-vous que le nom 'SonarQube' est configuré dans Manage Jenkins > System
                 withSonarQubeEnv('SonarQube') {
-                    sh '''
-                        mvn sonar:sonar \
-                            -Dsonar.projectKey=logismart-delivery-system \
-                            -Dsonar.host.url=${SONAR_HOST_URL} \
-                            -Dsonar.login=${SONAR_LOGIN}
-                    '''
+                    bat "mvn sonar:sonar -Dsonar.projectKey=logismart-delivery-system -Dsonar.host.url=%SONAR_HOST_URL% -Dsonar.login=%SONAR_LOGIN%"
                 }
             }
         }
@@ -115,9 +105,7 @@ pipeline {
         stage('Package') {
             steps {
                 echo '📦 Packaging application...'
-                sh '''
-                    mvn package -B -DskipTests
-                '''
+                bat 'mvn package -B -DskipTests'
             }
             post {
                 success {
@@ -130,10 +118,8 @@ pipeline {
             steps {
                 echo '🐳 Building Docker image...'
                 script {
-                    sh """
-                        docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} .
-                        docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest
-                    """
+                    bat "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
+                    bat "docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest"
                 }
             }
         }
@@ -142,10 +128,8 @@ pipeline {
             steps {
                 echo '🔒 Scanning Docker image for vulnerabilities...'
                 script {
-                    sh """
-                        docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
-                            aquasec/trivy image ${DOCKER_IMAGE}:${DOCKER_TAG} || true
-                    """
+                    // Utilisation de || exit 0 pour ne pas bloquer si Trivy trouve des failles (optionnel)
+                    bat "docker run --rm -v //var/run/docker.sock:/var/run/docker.sock aquasec/trivy image ${DOCKER_IMAGE}:${DOCKER_TAG}"
                 }
             }
         }
@@ -157,10 +141,8 @@ pipeline {
             steps {
                 echo '🚀 Deploying to staging environment...'
                 script {
-                    sh '''
-                        docker-compose -f docker-compose.ci.yml down || true
-                        docker-compose -f docker-compose.ci.yml up -d
-                    '''
+                    bat 'docker-compose -f docker-compose.ci.yml down || ver > nul'
+                    bat 'docker-compose -f docker-compose.ci.yml up -d'
                 }
             }
         }
@@ -169,38 +151,23 @@ pipeline {
     post {
         always {
             echo '🧹 Cleaning up...'
+            // cleanWs() est maintenant à l'intérieur du bloc pipeline/post, il trouvera le contexte.
             cleanWs()
         }
         success {
             echo '✅ Pipeline completed successfully!'
             emailext(
                 subject: "✅ Build Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                body: """
-                    Build succeeded!
-
-                    Job: ${env.JOB_NAME}
-                    Build Number: ${env.BUILD_NUMBER}
-                    Build URL: ${env.BUILD_URL}
-
-                    Check console output for details.
-                """,
-                to: '${DEFAULT_RECIPIENTS}'
+                body: "Le build Logismart est terminé avec succès.\nURL: ${env.BUILD_URL}",
+                to: 'votre-email@exemple.com'
             )
         }
         failure {
             echo '❌ Pipeline failed!'
             emailext(
                 subject: "❌ Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                body: """
-                    Build failed!
-
-                    Job: ${env.JOB_NAME}
-                    Build Number: ${env.BUILD_NUMBER}
-                    Build URL: ${env.BUILD_URL}
-
-                    Check console output for details.
-                """,
-                to: '${DEFAULT_RECIPIENTS}'
+                body: "Le build Logismart a échoué. Vérifiez les logs sur: ${env.BUILD_URL}",
+                to: 'votre-email@exemple.com'
             )
         }
     }
