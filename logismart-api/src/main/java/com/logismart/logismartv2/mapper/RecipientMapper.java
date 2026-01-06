@@ -13,9 +13,11 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface RecipientMapper {
 
-    @Mapping(target = "id", ignore = true)  
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "parcels", ignore = true)
     Recipient toEntity(RecipientCreateDTO dto);
 
+    @Mapping(target = "parcels", ignore = true)
     Recipient toEntity(RecipientUpdateDTO dto);
 
     @Mapping(target = "fullName", expression = "java(entity.getFullName())")
@@ -24,6 +26,7 @@ public interface RecipientMapper {
 
     List<RecipientResponseDTO> toResponseDTOList(List<Recipient> entities);
 
-    @Mapping(target = "id", ignore = true)  
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "parcels", ignore = true)
     void updateEntityFromDTO(RecipientUpdateDTO dto, @MappingTarget Recipient entity);
 }

@@ -1,11 +1,399 @@
 Accueil
 Promotion
+Suivi
+Brief
 Javalution
-Tableau de bord
-Scénarios pédago.
-Briefs de la promo
-Ressources
-Rendus
+
+SmartLogi Delivery Management System – V 0.1.0
+Assigné
+fr
+
+NA
+Nafia Akdi
+créé : 25/10/25
+Application de gestion des livraisons avec Spring Boot, pour suivre, planifier et optimiser l’envoi de colis.
+Référentiels
+Compétences transversales
+[2023] Concepteur⋅rice développeur⋅se d'applications
+Contexte du projet
+La société SmartLogi, spécialisée dans la livraison de colis à travers le Maroc, souhaite moderniser et automatiser la gestion de ses opérations logistiques.
+
+Actuellement, la société gère les livraisons manuellement à l’aide de fichiers Excel et de registres papier, ce qui engendre plusieurs difficultés : erreurs de saisie, pertes de données, retards dans les livraisons et manque de visibilité sur le suivi des colis.
+
+Pour répondre à ce besoin, votre société de services en développement logiciel a été sollicitée pour concevoir et développer une solution web de gestion logistique, nommée Smart Delivery Management System (SDMS).
+
+Cette application devra permettre à SmartLogi de :
+
+Collecter les colis depuis les clients expéditeurs.
+Stocker temporairement les colis dans les entrepôts de la société avant expédition.
+Planifier et assurer la livraison des colis aux destinataires finaux, qu’ils soient dans la même ville ou dans une autre région du Maroc.
+Fournir une traçabilité complète des colis grâce à un historique des statuts.
+Optimiser la planification logistique par zones géographiques et selon la priorité des colis.
+Réduire les erreurs humaines et améliorer la fiabilité du suivi des livraisons.
+Votre mission consiste donc à développer la nouvelle version du SDMS, plus complète et évolutive, qui servira de base au futur système intégré de gestion logistique de SmartLogi.
+
+Objectifs
+Centraliser la gestion des clients expéditeurs, destinataires, colis, livreurs et zones de livraison.
+Suivre le flux complet des colis : collecte chez le client, stockage, planification de la tournée, livraison finale.
+Permettre une recherche et un suivi précis des colis via différents critères (ville, zone, statut, priorité).
+Fournir un historique complet de chaque colis pour le suivi et la traçabilité.
+Optimiser l’organisation des tournées et réduire les retards grâce à une planification efficace.
+Faciliter la prise de décision pour les gestionnaires logistiques.
+Utilisateurs
+Gestionnaire logistique : supervise toutes les opérations, planifie les tournées, gère les livreurs et le stock.
+Livreur : consulte ses colis assignés et suit sa tournée.
+Client expéditeur : crée des demandes de livraison et reçoit des notifications sur l’état de ses colis.
+Destinataire : reçoit le colis et peut suivre sa livraison.
+
+User Stories
+
+Client expéditeur
+Je veux créer une demande de livraison pour envoyer un colis à un destinataire.
+Je veux consulter la liste de mes colis en cours et livrés pour suivre mes envois.
+Je veux recevoir une notification par email lorsque mon colis est collecté ou livré (bonus).
+Destinataire
+Je veux consulter le statut de colis qui me sont destinés afin de savoir quand les recevoir.
+Livreur
+Je veux voir la liste de mes colis assignés, avec leurs priorités et zones.
+Je veux mettre à jour le statut des colis au fur et à mesure de la collecte et de la livraison.
+Gestionnaire logistique
+Je veux voir toutes les demandes de livraison et les assigner aux livreurs pour planifier les tournées.
+Je veux corriger ou supprimer des informations erronées sur un colis, client ou destinataire.
+Je veux filtrer et paginer les colis par statut, zone, ville, priorité ou date.
+Je veux regrouper les colis par zone, statut ou priorité pour avoir une vue synthétique.
+Je veux pouvoir rechercher un colis, un client ou un livreur par mot-clé (nom, numéro, ville…) afin de retrouver rapidement une information précise.
+Je veux calculer le poids total et le nombre de colis par livreur et par zone pour équilibrer les tournées.
+Je veux identifier les colis en retard ou prioritaires et recevoir une alerte par email.
+Je veux associer plusieurs produits à un colis pour gérer les colis multi-produits.
+Je veux consulter l’historique complet d’un colis, avec toutes les étapes et commentaires.
+Modèle métier / Tables principales
+ClientExpéditeur : id, nom, prénom, email, téléphone, adresse
+Destinataire : id, nom, prénom, email, téléphone, adresse
+Livreur : id, nom, prénom, téléphone, véhicule, zoneAssignée
+Colis : id, description, poids, statut (créé, collecté, en stock, en transit, livré), priorité, idLivreur, idClientExpéditeur, idDestinataire, idZone, villeDestination
+Zone : id, nom, codePostal (pour organiser les tournées par villes)
+HistoriqueLivraison : id, idColis, statut, dateChangement, commentaire
+Produit : id, nom, catégorie, poids, prix
+Colis_Produit : idColis, idProduit, quantité, prix, dateAjout
+
+Exigences techniques
+
+Le projet SmartLogi devra respecter les exigences techniques suivantes :
+
+Technologies et outils :
+Spring Boot pour l’API REST
+Liquibase pour créer et faire évoluer la base de données
+DTO / MapStruct pour l’échange entre entités et API
+Swagger / OpenAPI pour la documentation des API
+SLF4J pour les logs des actions
+Pagination & tri pour toutes les listes importantes
+Validation via @Valid, @NotNull, @Size …
+SMTP pour l’envoi d’emails (bonus)
+Configuration YAML, base PostgreSQL, gestion de projet Maven, versioning Git/GitHub, suivi Jira
+Contraintes et bonnes pratiques :
+Architecture en couches : Controller → Service → Repository …
+Gestion centralisée des exceptions
+Respect des bonnes pratiques Spring et Java (noms, packaging, lisibilité)
+Modalités pédagogiques
+Projet individuel
+Début : 27/10/2025
+Deadline : 07/11/2025
+Modalités d'évaluation
+Présentation de 30 minutes :
+10 minutes : Démonstration des fonctionnalités de l'application.
+10 minutes : Explication du code et de son organisation ainsi que la modélisation.
+5 minutes : Mise en situation.
+5 minutes : évaluation des savoirs(Q/A)
+Livrables
+Dépôt GitHub contenant :
+Code source complet
+README.md (description, installation, technologies, captures d’écran)
+Diagramme de classes UML
+Scripts Liquibase
+Documentation Swagger/OpenAPI
+Collection Postman (optionnelle)
+Critères de performance
+Une bonne qualité du code et structure du projet
+Fonctionnalités de gestion logistique complètes, incluant le cycle de vie des colis et la planification des livraisons..
+Historique des colis correctement maintenu.
+Pagination et filtres fonctionnels sur les listes volumineuses.
+Utilisation efficace de GitHub et Jira.
+Assignation
+Ce brief vous a été assigné.
+Lisez attentivement votre brief avant de débuter votre travail !
+
+Assignation individuelle
+Vous travaillez individuellement sur ce brief.
+Situation professionnelle
+Developper des APIs REST
+Besoin visé ou problème rencontré
+Permettre la communication efficace entre des systèmes informatiques distincts, que ce soit au sein d'une organisation ou avec des tiers. Les API REST sont utilisées pour échanger des données de manière structurée et standardisée via le protocole HTTP. Les problèmes courants rencontrés dans cette situation incluent la nécessité de garantir la sécurité, la performance et la fiabilité de la communication entre les applications.
+11 compétences visées
+Compétences visées
+C3. Définir le périmètre d’un problème rencontré en adoptant une démarche inductive
+niveau 1, imiter
+niveau 2, adapter
+niveau 3, transposer
+C4. Rechercher de façon méthodique une ou des solutions au problème rencontré
+niveau 1, imiter
+niveau 2, adapter
+niveau 3, transposer
+C5. Partager la solution adoptée en utilisant les moyens de partage de connaissance ou de documentation disponibles
+niveau 1, imiter
+niveau 2, adapter
+niveau 3, transposer
+Afficher la totalité des compétences
+
+Accéder au contenu principal
+Simplonline - Brief
+Accueil
+Promotion
+Suivi
+Brief
+Javalution
+
+Tests et qualité – SmartLogi Delivery Management System v0.1.1
+Assigné
+fr
+
+NA
+Nafia Akdi
+créé : 08/11/25
+Application de gestion des livraisons avec Spring Boot, dédiée à la validation et à l’assurance qualité du code via des tests automatisés.
+Référentiels
+Compétences transversales
+[2023] Concepteur⋅rice développeur⋅se d'applications
+Contexte du projet
+La société SmartLogi, spécialisée dans la livraison de colis à travers le Maroc, poursuit la modernisation de son système de gestion logistique avec la solution Smart Delivery Management System (SDMS).
+
+Cette application permet la gestion complète du flux de livraison : collecte, stockage, planification, suivi, et traçabilité des colis, tout en centralisant les informations liées aux clients, livreurs, zones et priorités.
+
+Après la mise en œuvre réussie de la première version fonctionnelle (v0.1.0), la direction technique souhaite engager une nouvelle phase de développement axée sur la fiabilité et la qualité du code.
+
+Cette étape est essentielle avant le déploiement en environnement de préproduction.
+
+Objectifs
+L’objectif principal de cette itération est de garantir que l’application soit robuste, stable et conforme aux standards de qualité logicielle.
+
+Pour cela, une stratégie complète de tests et d’analyse de code doit être mise en place afin de :
+
+Valider le bon fonctionnement des composants existants,
+Identifier et corriger les anomalies potentielles,
+Améliorer la maintenabilité et la lisibilité du code,
+Fournir des indicateurs concrets de qualité (taux de couverture, complexité, duplications, etc.).
+Travail à réaliser
+Dans le cadre de cette phase qualité, l’équipe de développement devra mener les actions suivantes :
+
+Mettre en place et exécuter une série complète de tests unitaires sur les principales classes du projet (services, contrôleurs, composants métier) afin d’atteindre un taux de couverture supérieur à 90 %. Ces tests devront valider les comportements attendus, les cas d’erreurs, ainsi que les traitements métiers critiques.
+Réaliser quelques tests d’intégration
+pour s’assurer de la cohérence globale du système, notamment :
+le bon fonctionnement des endpoints REST,
+l’interaction entre les couches de l’application,
+et la gestion correcte des accès à la base de données.
+Intégrer des outils de mesure et d’analyse de la qualité du code
+, notamment :
+JaCoCo : mesure de la couverture du code,
+SonarQube : analyse des anomalies, duplications, vulnérabilités et dette technique.
+Produire un rapport de tests et d’analyse présentant :
+les résultats de couverture obtenus,
+les observations issues de l’audit SonarQube,
+les actions d’amélioration mises en œuvre pour renforcer la qualité du projet.
+Environnement et exigences techniques
+Frameworks et outils de test :
+JUnit 5, Mockito, Spring Boot Test, ...
+Outils d’analyse :
+JaCoCo, SonarQube
+Bonnes pratiques :
+Tests isolés, reproductibles et clairement nommés
+Utilisation de @Mock, @SpringBootTest selon les besoins
+Génération automatique des rapports de couverture et d’analyse
+Documentation claire des résultats dans le dépôt
+Modalités pédagogiques
+Projet individuel
+Début : 10/11/2025
+Deadline : 14/11/2025
+Modalités d'évaluation
+Présentation de 30 minutes :
+10 minutes : Démonstration des fonctionnalités de l'application.
+10 minutes : Explication du code et de son organisation ainsi que la modélisation.
+5 minutes : Mise en situation.
+5 minutes : évaluation des savoirs(Q/A)
+Livrables
+Code source du projet mis à jour avec les classes de test.
+- Rapport de couverture JaCoCo affichant plus de 90 % de couverture.
+- Rapport d’analyse SonarQube.
+- Fichier README.md complété avec : la stratégie de test mise en place, les outils utilisés, les indicateurs obtenus, les améliorations proposées.
+Critères de performance
+Couverture du code supérieure à 90 %
+Tests unitaires et d’intégration fiables
+Qualité et lisibilité du code respectant les bonnes pratiques
+Détection et correction des anomalies via SonarQube
+Rapports clairs et complets sur la stratégie et les résultats des tests
+Assignation
+Ce brief vous a été assigné.
+Lisez attentivement votre brief avant de débuter votre travail !
+
+Assignation individuelle
+Vous travaillez individuellement sur ce brief.
+Situation professionnelle
+Configurer et instaurer une application Monolithique
+Besoin visé ou problème rencontré
+Cette situation vise à mettre en place l'ensemble de l'application en tant que monolithe et de rencontrer les difficultés de mise à l'échelle et la complexité à long terme.
+14 compétences visées
+Compétences visées
+C1. Planifier le travail à effectuer individuellement
+niveau 1, imiter
+niveau 2, adapter
+niveau 3, transposer
+C2. Contribuer au pilotage de l’organisation du travail individuel et collectif
+niveau 1, imiter
+niveau 2, adapter
+niveau 3, transposer
+C6. Présenter un travail réalisé en synthétisant ses résultats, sa démarche
+niveau 1, imiter
+niveau 2, adapter
+niveau 3, transposer
+Afficher la totalité des compétences
+
+Accéder au contenu principal
+Accueil
+Promotion
+Suivi
+Brief
+Javalution
+
+Sécurisation stateless JWT du SmartLogi Delivery System – v0.2.0
+Assigné
+fr
+
+NA
+Nafia Akdi
+créé : 15/11/25
+Implémentez une authentification sécurisée avec Spring sécurité.
+Référentiels
+Compétences transversales
+[2023] Concepteur⋅rice développeur⋅se d'applications
+Contexte du projet
+SmartLogi utilise l’application SDMS pour gérer l’ensemble du cycle logistique : collecte, stockage, livraison, suivi des colis, gestion des clients et des livreurs. La version actuelle fonctionne correctement sur le plan métier, mais aucun mécanisme de sécurité n’est en place.
+
+L’entreprise souhaite désormais sécuriser son API REST afin de :
+
+protéger les données sensibles,
+séparer clairement les droits entre gestionnaires, livreurs et clients,
+préparer l’intégration avec des frontends Angular/React,
+appliquer une approche 100 % stateless adaptée aux API modernes.
+Pour cela, la solution retenue est l’utilisation de JWT Bearer Token pour l’authentification et la gestion des accès.
+
+Objectifs du projet
+Mettre en place une authentification stateless basée sur JWT dans Spring Security.
+Appliquer des règles d’autorisation selon les rôles métier (Gestionnaire, Livreur, Client).
+Configurer un CORS strict pour n’autoriser que les frontends internes.
+Rôles et Permission
+GESTIONNAIRE (ROLE_MANAGER)
+Accès complet : gestion colis, livreurs, zones, statistiques
+LIVREUR
+consulter uniquement les colis qui lui sont assignés
+mettre à jour le statut (collecté, en transit, livré)
+pas d’accès aux données des autres livreurs
+pas d’accès aux informations sensibles
+CLIENT EXPÉDITEUR (ROLE_CLIENT)
+créer une demande de livraison
+consulter uniquement ses propres colis
+recevoir suivi et statuts
+pas d'accès aux livreurs, zones, tournées
+Travail à réaliser
+Mettre en place l’authentification JWT
+Créer un endpoint /auth/login
+Vérifier les identifiants via un UserDetailsService
+Générer un JWT avec rôles et expiration
+Ajouter un filtre qui valide le token sur chaque requête et charge les rôles dans le contexte Spring Security
+Sécurisation
+Activer le mode stateless
+Définir les autorisations par rôle sur les endpoints
+Ajouter le filtre JWT dans la chaîne de filtres
+Appliquer les règles d'accès par rôle
+GESTIONNAIRE : accès complet (zones, livreurs, stats, colis)
+LIVREUR : accès uniquement à ses colis assignés
+CLIENT : création et suivi de ses colis uniquement
+Utilisation recommandée : SecurityFilterChain, @PreAuthorize("hasRole('...')")
+
+Configurer CORS
+N’autoriser que les frontends internes (localhost:4200, 3000, 8080)
+Autoriser les méthodes REST classiques
+Autoriser les headers Authorization et Content-Type
+Tests manuels
+Login → obtenir token
+Tester endpoints autorisés / non autorisés
+Cas sans token, token invalide, token expiré
+Évolutions à ajouter au projet (sans modifier l’existant)
+Gestion dynamique des rôles et permissions (Admin)
+Nouvelles notions
+
+Permission (nouvelle table)
+Role possède un ensemble de permissions
+Fonctionnalités Admin
+
+Ajouter / supprimer une permission
+Assigner / retirer une permission à un rôle
+Consulter les permissions d’un rôle
+Impact sécurité
+Sécurité basée sur les permissions et non uniquement les rôles
+Mise à jour des endpoints (hasAuthority)
+Mise à jour de la configuration Spring Security et JWT
+Déploiement avec Docker
+Dockeriser l’application (Dockerfile)
+Utiliser docker-compose pour lancer : l’application et la base de données PostgreSQL
+Modalités pédagogiques
+Travail individuel
+du 17/11/2025
+Deadline : 19/12/2025 (9 jours).
+Modalités d'évaluation
+Présentation de 30 minutes :
+o 10 minutes : Démonstration des fonctionnalités de l'application.
+o 10 minutes : Explication du code et de son organisation ainsi que la modélisation.
+o 5 minutes : Mise en situation.
+o 5 minutes : évaluation des savoirs(Q/A)
+Livrables
+- Code GitHub propre et structuré
+- README avec explication du flux d’authentification
+- Documentation Swagger protégée
+- UML des utilisateurs avec rôles
+- Collection Postman
+Critères de performance
+- Intégration correcte de Spring Security et JWT stateless.
+- Protection des endpoints selon les rôles.
+- Code propre, lisible et structuré.
+- Versioning Git et suivi de projet (Jira).
+- Tests Postman fonctionnels et documentation claire.
+Assignation
+Ce brief vous a été assigné.
+Lisez attentivement votre brief avant de débuter votre travail !
+
+Assignation individuelle
+Vous travaillez individuellement sur ce brief.
+Situation professionnelle
+Sécurisation et déploiement d'une solution web avec intégration continue
+Besoin visé ou problème rencontré
+Développer une solution web performante, évolutive et maintenable tout en garantissant une expérience utilisateur optimale, une compatibilité multi-plateforme et une réduction des temps de développement. Les défis incluent la gestion des dépendances, les problèmes de performance côté client/serveur et le respect des normes de développement durable et sécurisé.
+18 compétences visées
+Compétences visées
+C1. Planifier le travail à effectuer individuellement
+niveau 1, imiter
+niveau 2, adapter
+niveau 3, transposer
+C2. Contribuer au pilotage de l’organisation du travail individuel et collectif
+niveau 1, imiter
+niveau 2, adapter
+niveau 3, transposer
+C3. Définir le périmètre d’un problème rencontré en adoptant une démarche inductive
+niveau 1, imiter
+niveau 2, adapter
+niveau 3, transposer
+Afficher la totalité des compétences
+
+Accéder au contenu principal
+Accueil
+Promotion
 Suivi
 Brief
 Javalution
@@ -146,6 +534,141 @@ niveau 1, imiter
 niveau 2, adapter
 niveau 3, transposer
 C4. Rechercher de façon méthodique une ou des solutions au problème rencontré
+niveau 1, imiter
+niveau 2, adapter
+niveau 3, transposer
+Afficher la totalité des compétences
+
+Accéder au contenu principal
+Simplonline - Brief
+Accueil
+Promotion
+Suivi
+Brief
+Javalution
+
+Mise en place CI/CD du SmartLogi Delivery Management System – v0.3.0
+Assigné
+fr
+
+NA
+Nafia Akdi
+créé : 27/12/25
+Automatisation de l’intégration, des tests, de l’analyse qualité et du déploiement du SDMS.
+Référentiels
+Compétences transversales
+[2023] Concepteur⋅rice développeur⋅se d'applications
+Contexte du projet
+Contexte métier
+L’application SmartLogi Delivery Management System (SDMS) a connu plusieurs évolutions majeures :
+
+v0.1.0 : fonctionnalités métier (gestion des colis, clients, livreurs, zones)
+v0.1.1 : qualité logicielle et tests automatisés
+v0.2.0 : sécurisation JWT stateless
+v0.2.1 : authentification hybride JWT + OAuth2 et déploiement Docker
+À ce stade, l’application est fonctionnelle, sécurisée et conteneurisée, mais le cycle de développement repose encore sur des actions manuelles (tests, build, analyse, déploiement).
+
+Dans un contexte professionnel réel, cette approche engendre :
+des risques d’erreurs humaines,
+des délais de mise en production,
+une difficulté à garantir la qualité continue du code.
+SmartLogi souhaite donc industrialiser le cycle de vie de l’application en mettant en place une chaîne CI/CD complète, permettant :
+
+une validation automatique du code à chaque modification,
+une détection précoce des régressions et problèmes de qualité,
+une standardisation des builds et des déploiements,
+une meilleure collaboration entre les développeurs.
+Objectifs métier
+L’objectif de cette itération est de sécuriser et fiabiliser le processus de livraison logicielle du SDMS.
+
+À l’issue de cette phase, SmartLogi doit être capable de :
+
+intégrer automatiquement les nouvelles fonctionnalités développées,
+s’assurer que chaque changement respecte les règles de qualité et de sécurité,
+livrer rapidement une version exploitable de l’application,
+disposer d’indicateurs clairs sur l’état de santé du projet.
+Cette démarche vise à préparer le SDMS à un déploiement en environnement professionnel (préproduction / production).
+
+Périmètre fonctionnel
+La chaîne CI/CD devra couvrir l’ensemble du cycle suivant :
+
+Développement
+Un développeur pousse du code sur le dépôt Git (GitHub).
+Validation automatique
+Le code est automatiquement compilé.
+Les tests unitaires et d’intégration sont exécutés.
+La qualité du code est analysée.
+Contrôle qualité
+Les anomalies, vulnérabilités et dettes techniques sont détectées.
+Le projet est bloqué si les critères de qualité ne sont pas respectés.
+Livraison
+Une image Docker de l’application est générée.
+L’application est prête à être déployée de manière standardisée.
+Spécifications techniques
+Outils et technologies
+La mise en place du CI/CD devra s’appuyer sur les outils suivants :
+
+Gestion de code source : Git/GitHub (branches, pull requests)
+Intégration continue : Jenkins
+Build & Tests: Maven, JUnit 5, Mockito
+Qualité du code: SonarQube, JaCoCo
+Conteneurisation : Docker, Docker Compose
+Bonnes pratiques CI/CD
+Utilisation d’un pipeline déclaratif Jenkins.
+Séparation claire des étapes du pipeline.
+Variables d’environnement pour :
+accès SonarQube,
+configuration Docker.
+Logs lisibles et exploitables.
+Pipeline reproductible sur un autre environnement.
+Évolutions optionnelles (bonus) – Déploiement Cloud (AWS)
+Dans une optique de mise en situation professionnelle, une extension optionnelle du projet consiste à déployer l’application SDMS sur une infrastructure cloud AWS, en s’appuyant sur les principes DevOps et CI/CD déjà mis en place.
+
+Modalités pédagogiques
+Travail individuel
+Durée : 4 jours
+Début : 29/12/2025
+Deadline : 02/01/2025
+Modalités d'évaluation
+Présentation (30 minutes) :
+- 5 minutes : démonstration
+- 5 minutes : explication technique
+- 10 minutes : mise en situation
+- 10 minutes : questions / réponses
+Livrables
+Dépôt GitHub contenant :
+- Jenkinsfile
+- Dockerfile (réutilisé ou amélioré)
+- docker-compose.yml (si déploiement)
+- README détaillant : le pipeline CI/CD, les étapes Jenkins, l’intégration SonarQube, le build Docker.
+Critères de performance
+- Pipeline Jenkins fonctionnel et automatisé.
+- Tests exécutés automatiquement à chaque build.
+- Analyse SonarQube intégrée et Quality Gate respecté.
+- Image Docker générée avec succès.
+- Structure claire, lisible et professionnelle.
+- Compréhension démontrée du cycle CI/CD.
+Assignation
+Ce brief vous a été assigné.
+Lisez attentivement votre brief avant de débuter votre travail !
+
+Assignation individuelle
+Vous travaillez individuellement sur ce brief.
+Situation professionnelle
+Sécurisation et déploiement d'une solution web avec intégration continue
+Besoin visé ou problème rencontré
+Développer une solution web performante, évolutive et maintenable tout en garantissant une expérience utilisateur optimale, une compatibilité multi-plateforme et une réduction des temps de développement. Les défis incluent la gestion des dépendances, les problèmes de performance côté client/serveur et le respect des normes de développement durable et sécurisé.
+18 compétences visées
+Compétences visées
+C1. Planifier le travail à effectuer individuellement
+niveau 1, imiter
+niveau 2, adapter
+niveau 3, transposer
+C5. Partager la solution adoptée en utilisant les moyens de partage de connaissance ou de documentation disponibles
+niveau 1, imiter
+niveau 2, adapter
+niveau 3, transposer
+C7. Se familiariser avec les codes et la culture propres à son environnement professionnel
 niveau 1, imiter
 niveau 2, adapter
 niveau 3, transposer

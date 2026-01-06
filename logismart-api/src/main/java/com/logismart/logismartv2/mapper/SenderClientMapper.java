@@ -13,9 +13,13 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface SenderClientMapper {
 
-    @Mapping(target = "id", ignore = true)  
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "userId", ignore = true)
+    @Mapping(target = "parcels", ignore = true)
     SenderClient toEntity(SenderClientCreateDTO dto);
 
+    @Mapping(target = "userId", ignore = true)
+    @Mapping(target = "parcels", ignore = true)
     SenderClient toEntity(SenderClientUpdateDTO dto);
 
     @Mapping(target = "fullName", expression = "java(entity.getFullName())")
@@ -23,6 +27,8 @@ public interface SenderClientMapper {
 
     List<SenderClientResponseDTO> toResponseDTOList(List<SenderClient> entities);
 
-    @Mapping(target = "id", ignore = true)  
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "userId", ignore = true)
+    @Mapping(target = "parcels", ignore = true)
     void updateEntityFromDTO(SenderClientUpdateDTO dto, @MappingTarget SenderClient entity);
 }

@@ -15,12 +15,14 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface DeliveryPersonMapper {
 
-    @Mapping(target = "id", ignore = true)  
-    @Mapping(target = "assignedZone", ignore = true)  
-    @Mapping(target = "parcels", ignore = true)  
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "userId", ignore = true)
+    @Mapping(target = "assignedZone", ignore = true)
+    @Mapping(target = "parcels", ignore = true)
     DeliveryPerson toEntity(DeliveryPersonCreateDTO dto);
 
-    @Mapping(target = "assignedZone", ignore = true)  
+    @Mapping(target = "userId", ignore = true)
+    @Mapping(target = "assignedZone", ignore = true)
     @Mapping(target = "parcels", ignore = true)
     DeliveryPerson toEntity(DeliveryPersonUpdateDTO dto);
 
@@ -33,8 +35,9 @@ public interface DeliveryPersonMapper {
 
     List<DeliveryPersonResponseDTO> toResponseDTOList(List<DeliveryPerson> entities);
 
-    @Mapping(target = "id", ignore = true)  
-    @Mapping(target = "assignedZone", ignore = true)  
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "userId", ignore = true)
+    @Mapping(target = "assignedZone", ignore = true)
     @Mapping(target = "parcels", ignore = true)
     void updateEntityFromDTO(DeliveryPersonUpdateDTO dto, @MappingTarget DeliveryPerson entity);
 
