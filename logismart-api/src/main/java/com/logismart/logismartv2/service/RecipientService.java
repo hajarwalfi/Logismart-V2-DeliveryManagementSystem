@@ -108,15 +108,4 @@ public class RecipientService {
         return recipientMapper.toResponseDTOList(recipientRepository.searchByName(keyword));
     }
 
-    @Transactional(readOnly = true)
-    public List<RecipientResponseDTO> findWithEmail() {
-        log.info("Finding recipients with email");
-        return recipientMapper.toResponseDTOList(recipientRepository.findRecipientsWithEmail());
-    }
-
-    @Transactional(readOnly = true)
-    public List<RecipientResponseDTO> findWithoutEmail() {
-        log.info("Finding recipients without email");
-        return recipientMapper.toResponseDTOList(recipientRepository.findRecipientsWithoutEmail());
-    }
 }

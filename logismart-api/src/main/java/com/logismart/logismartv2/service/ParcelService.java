@@ -2,9 +2,11 @@ package com.logismart.logismartv2.service;
 
 import com.logismart.logismartv2.dto.deliveryhistory.DeliveryHistoryResponseDTO;
 import com.logismart.logismartv2.dto.parcel.ParcelCreateDTO;
+import com.logismart.logismartv2.dto.parcel.ParcelCreateWithRecipientDTO;
 import com.logismart.logismartv2.dto.parcel.ParcelProductItemDTO;
 import com.logismart.logismartv2.dto.parcel.ParcelResponseDTO;
 import com.logismart.logismartv2.dto.parcel.ParcelUpdateDTO;
+import com.logismart.logismartv2.dto.tracking.PublicTrackingResponseDTO;
 import com.logismart.logismartv2.entity.*;
 import com.logismart.logismartv2.exception.BadRequestException;
 import com.logismart.logismartv2.exception.ResourceNotFoundException;
@@ -494,8 +496,15 @@ public class ParcelService {
         log.info("Finding parcels for client with user ID: {}", userId);
 
         // Find the sender client by user ID
-        SenderClient senderClient = senderClientRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("SenderClient", "userId", userId));
+        // If no SenderClient exists yet, return empty list (user hasn't sent any parcels)
+        var optionalSenderClient = senderClientRepository.findByUserId(userId);
+
+        if (optionalSenderClient.isEmpty()) {
+            log.info("No SenderClient found for user ID: {} - returning empty list", userId);
+            return List.of();
+        }
+
+        SenderClient senderClient = optionalSenderClient.get();
 
         // Get all parcels sent by this client
         List<Parcel> parcels = parcelRepository.findBySenderClientId(senderClient.getId());
@@ -585,6 +594,153 @@ public class ParcelService {
         }
 
         return parcel.getDeliveryPerson().getId().equals(deliveryPerson.getId());
+    }
+
+    /**
+     * Get SenderClient ID by User ID (for CLIENT role parcel creation)
+     */
+    @Transactional(readOnly = true)
+    public String getSenderClientIdByUserId(String userId) {
+        log.info("Getting SenderClient ID for user ID: {}", userId);
+        return senderClientRepository.findByUserId(userId)
+                .map(SenderClient::getId)
+                .orElse(null);
+    }
+
+    /**
+     * Create a parcel with recipient info inline (for CLIENT role)
+     * This method creates the recipient first, then creates the parcel
+     */
+    public ParcelResponseDTO createWithRecipient(ParcelCreateWithRecipientDTO dto, String userId) {
+        log.info("Creating parcel with recipient for user ID: {}", userId);
+
+        // 1. Get SenderClient from userId
+        SenderClient sender = senderClientRepository.findByUserId(userId)
+                .orElseThrow(() -> new BadRequestException("No SenderClient profile found for your account. Please contact administrator."));
+
+        // 2. Create Recipient
+        ParcelCreateWithRecipientDTO.RecipientInfo recipientInfo = dto.getRecipient();
+        Recipient recipient = new Recipient();
+        recipient.setFirstName(recipientInfo.getFirstName());
+        recipient.setLastName(recipientInfo.getLastName());
+        recipient.setPhone(recipientInfo.getPhone());
+        recipient.setEmail(recipientInfo.getEmail());
+        recipient.setAddress(recipientInfo.getAddress());
+
+        Recipient savedRecipient = recipientRepository.save(recipient);
+        log.info("Created recipient with ID: {}", savedRecipient.getId());
+
+        // 3. Validate products
+        for (ParcelProductItemDTO productItem : dto.getProducts()) {
+            if (!productRepository.existsById(productItem.getProductId())) {
+                throw new ResourceNotFoundException("Product", "id", productItem.getProductId());
+            }
+        }
+
+        // 4. Create Parcel
+        Parcel parcel = new Parcel();
+        parcel.setDescription(dto.getDescription());
+        parcel.setWeight(dto.getWeight());
+        parcel.setPriority(dto.getPriority());
+        parcel.setDestinationCity(dto.getDestinationCity());
+        parcel.setStatus(ParcelStatus.CREATED);
+        parcel.setSenderClient(sender);
+        parcel.setRecipient(savedRecipient);
+
+        Parcel savedParcel = parcelRepository.save(parcel);
+        log.info("Parcel created with ID: {}", savedParcel.getId());
+
+        // 5. Add products to parcel
+        for (ParcelProductItemDTO productItem : dto.getProducts()) {
+            Product product = productRepository.findById(productItem.getProductId()).get();
+
+            ParcelProduct parcelProduct = new ParcelProduct();
+            parcelProduct.setParcel(savedParcel);
+            parcelProduct.setProduct(product);
+            parcelProduct.setQuantity(productItem.getQuantity());
+            parcelProduct.setPrice(productItem.getPrice());
+
+            parcelProductRepository.save(parcelProduct);
+            log.info("Added product ID: {} (qty: {}) to parcel ID: {}",
+                    product.getId(), productItem.getQuantity(), savedParcel.getId());
+        }
+
+        // 6. Create initial delivery history
+        DeliveryHistory initialHistory = new DeliveryHistory();
+        initialHistory.setParcel(savedParcel);
+        initialHistory.setStatus(ParcelStatus.CREATED);
+        initialHistory.setChangedAt(LocalDateTime.now());
+        initialHistory.setComment("Demande de livraison creee par le client");
+
+        deliveryHistoryRepository.save(initialHistory);
+        log.info("Initial delivery history created for parcel ID: {}", savedParcel.getId());
+
+        log.info("Parcel creation complete - ID: {}, Products: {}, Status: CREATED",
+                savedParcel.getId(), dto.getProducts().size());
+
+        return parcelMapper.toResponseDTO(savedParcel);
+    }
+
+    /**
+     * Public tracking for recipients (no authentication required).
+     * Validates that the email matches the recipient's email.
+     */
+    @Transactional(readOnly = true)
+    public PublicTrackingResponseDTO trackParcelPublic(String parcelId, String email) {
+        log.info("Public tracking request for parcel ID: {} with email: {}", parcelId, email);
+
+        // Find the parcel
+        Parcel parcel = parcelRepository.findByIdWithRelationships(parcelId)
+                .orElseThrow(() -> new ResourceNotFoundException("Parcel", "id", parcelId));
+
+        // Verify that the email matches the recipient's email
+        if (parcel.getRecipient() == null || parcel.getRecipient().getEmail() == null) {
+            throw new BadRequestException("This parcel cannot be tracked publicly");
+        }
+
+        if (!parcel.getRecipient().getEmail().equalsIgnoreCase(email)) {
+            throw new BadRequestException("Email does not match the recipient for this parcel");
+        }
+
+        // Get delivery history
+        List<DeliveryHistory> history = deliveryHistoryRepository.findByParcelIdOrderByChangedAtAsc(parcelId);
+        List<DeliveryHistoryResponseDTO> historyDTOs = deliveryHistoryMapper.toResponseDTOList(history);
+
+        // Build response with limited information (privacy)
+        return PublicTrackingResponseDTO.builder()
+                .parcelId(parcel.getId())
+                .description(parcel.getDescription())
+                .status(parcel.getStatus().name())
+                .statusDisplay(getStatusDisplay(parcel.getStatus()))
+                .priority(parcel.getPriority().name())
+                .priorityDisplay(getPriorityDisplay(parcel.getPriority()))
+                .weight(parcel.getWeight())
+                .destinationCity(parcel.getDestinationCity())
+                .recipientName(parcel.getRecipient().getFullName())
+                .senderName(parcel.getSenderClient() != null ?
+                        parcel.getSenderClient().getFullName() : "Unknown")
+                .createdAt(parcel.getCreatedAt())
+                .history(historyDTOs)
+                .build();
+    }
+
+    private String getStatusDisplay(ParcelStatus status) {
+        return switch (status) {
+            case CREATED -> "Créé";
+            case COLLECTED -> "Collecté";
+            case IN_STOCK -> "En stock";
+            case IN_TRANSIT -> "En transit";
+            case DELIVERED -> "Livré";
+        };
+    }
+
+    private String getPriorityDisplay(ParcelPriority priority) {
+        return switch (priority) {
+            case NORMAL -> "Normal";
+            case HIGH -> "Elevé";
+            case URGENT -> "Urgent";
+            case EXPRESS -> "Express";
+        };
     }
 
 }

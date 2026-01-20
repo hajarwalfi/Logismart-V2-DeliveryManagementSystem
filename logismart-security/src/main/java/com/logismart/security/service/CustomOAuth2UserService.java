@@ -3,10 +3,12 @@ package com.logismart.security.service;
 import com.logismart.security.entity.AuthProvider;
 import com.logismart.security.entity.Role;
 import com.logismart.security.entity.User;
+import com.logismart.security.event.ClientUserRegisteredEvent;
 import com.logismart.security.repository.RoleRepository;
 import com.logismart.security.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -28,6 +30,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -103,7 +106,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 .role(defaultRole)
                 .build();
 
-        return userRepository.save(newUser);
+        User savedUser = userRepository.save(newUser);
+
+        // Publish event to create SenderClient for new OAuth2 users
+        eventPublisher.publishEvent(new ClientUserRegisteredEvent(this, savedUser));
+        log.info("Published ClientUserRegisteredEvent for OAuth2 user {}", savedUser.getId());
+
+        return savedUser;
     }
 
     /**

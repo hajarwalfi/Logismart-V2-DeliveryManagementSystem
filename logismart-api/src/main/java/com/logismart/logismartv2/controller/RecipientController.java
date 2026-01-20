@@ -23,16 +23,16 @@ import java.util.List;
 @RequestMapping("/api/recipients")
 @RequiredArgsConstructor
 @Slf4j
-@PreAuthorize("hasRole('MANAGER')")
 @Tag(name = "Recipient Management", description = "APIs for managing parcel recipients")
 public class RecipientController {
 
     private final RecipientService recipientService;
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('MANAGER', 'CLIENT')")
     @Operation(
             summary = "Create a new recipient",
-            description = "Creates a new recipient (email is optional)"
+            description = "Creates a new recipient (email is optional). Accessible by MANAGER and CLIENT."
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Recipient created successfully"),
@@ -46,6 +46,7 @@ public class RecipientController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('MANAGER', 'CLIENT')")
     @Operation(
             summary = "Get recipient by ID",
             description = "Retrieves a recipient by their unique identifier"
@@ -63,6 +64,7 @@ public class RecipientController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('MANAGER', 'CLIENT')")
     @Operation(
             summary = "Get all recipients",
             description = "Retrieves a list of all recipients"
@@ -77,6 +79,7 @@ public class RecipientController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
             summary = "Update a recipient",
             description = "Updates recipient information (firstName, lastName, email, phone, address). " +
@@ -102,6 +105,7 @@ public class RecipientController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
             summary = "Delete a recipient",
             description = "Deletes a recipient by their ID"
@@ -119,6 +123,7 @@ public class RecipientController {
     }
 
     @GetMapping("/search")
+    @PreAuthorize("hasAnyRole('MANAGER', 'CLIENT')")
     @Operation(
             summary = "Search recipients by name",
             description = "Searches for recipients by name (case-insensitive)"
@@ -134,31 +139,4 @@ public class RecipientController {
         return ResponseEntity.ok(recipients);
     }
 
-    @GetMapping("/with-email")
-    @Operation(
-            summary = "Get recipients with email",
-            description = "Retrieves recipients who have an email address"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Recipients retrieved successfully")
-    })
-    public ResponseEntity<List<RecipientResponseDTO>> getRecipientsWithEmail() {
-        log.info("REST: Finding recipients with email");
-        List<RecipientResponseDTO> recipients = recipientService.findWithEmail();
-        return ResponseEntity.ok(recipients);
-    }
-
-    @GetMapping("/without-email")
-    @Operation(
-            summary = "Get recipients without email",
-            description = "Retrieves recipients who do not have an email address"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Recipients retrieved successfully")
-    })
-    public ResponseEntity<List<RecipientResponseDTO>> getRecipientsWithoutEmail() {
-        log.info("REST: Finding recipients without email");
-        List<RecipientResponseDTO> recipients = recipientService.findWithoutEmail();
-        return ResponseEntity.ok(recipients);
-    }
 }

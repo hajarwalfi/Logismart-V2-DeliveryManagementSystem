@@ -76,11 +76,11 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         // Option 1: Redirect to frontend with token as URL parameter
         // This is useful for web applications
-        // String redirectUrl = frontendRedirectUrl + "?token=" + jwtToken;
-        // getRedirectStrategy().sendRedirect(request, response, redirectUrl);
+        String redirectUrl = frontendRedirectUrl + "?token=" + jwtToken;
+        getRedirectStrategy().sendRedirect(request, response, redirectUrl);
 
         // Option 2: Return JSON response (uncomment if you prefer JSON response)
-        returnJsonResponse(response, user, jwtToken);
+        // returnJsonResponse(response, user, jwtToken);
     }
 
     /**

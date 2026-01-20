@@ -24,13 +24,13 @@ import java.util.List;
 @RequestMapping("/api/products")
 @RequiredArgsConstructor
 @Slf4j
-@PreAuthorize("hasRole('MANAGER')")
 @Tag(name = "Product Catalog", description = "APIs for managing product catalog")
 public class ProductController {
 
     private final ProductService productService;
 
     @PostMapping
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
             summary = "Create a new product",
             description = "Creates a new product in the catalog with unique name"
@@ -48,6 +48,7 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('MANAGER', 'CLIENT')")
     @Operation(
             summary = "Get product by ID",
             description = "Retrieves a product by its unique identifier"
@@ -65,9 +66,10 @@ public class ProductController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('MANAGER', 'CLIENT')")
     @Operation(
             summary = "Get all products",
-            description = "Retrieves a list of all products in the catalog"
+            description = "Retrieves a list of all products in the catalog. Accessible by MANAGER and CLIENT."
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "List of products retrieved successfully")
@@ -79,6 +81,7 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
             summary = "Update a product",
             description = "Updates an existing product's information"
@@ -103,6 +106,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
             summary = "Delete a product",
             description = "Deletes a product by its ID"
@@ -120,6 +124,7 @@ public class ProductController {
     }
 
     @GetMapping("/category/{category}")
+    @PreAuthorize("hasAnyRole('MANAGER', 'CLIENT')")
     @Operation(
             summary = "Get products by category",
             description = "Retrieves all products in a specific category"
@@ -136,6 +141,7 @@ public class ProductController {
     }
 
     @GetMapping("/search")
+    @PreAuthorize("hasAnyRole('MANAGER', 'CLIENT')")
     @Operation(
             summary = "Search products by name",
             description = "Searches for products by name (case-insensitive)"
@@ -152,6 +158,7 @@ public class ProductController {
     }
 
     @GetMapping("/price-range")
+    @PreAuthorize("hasAnyRole('MANAGER', 'CLIENT')")
     @Operation(
             summary = "Get products by price range",
             description = "Retrieves products within a specified price range"
@@ -170,6 +177,7 @@ public class ProductController {
     }
 
     @GetMapping("/categories")
+    @PreAuthorize("hasAnyRole('MANAGER', 'CLIENT')")
     @Operation(
             summary = "Get all product categories",
             description = "Retrieves a list of all distinct product categories"

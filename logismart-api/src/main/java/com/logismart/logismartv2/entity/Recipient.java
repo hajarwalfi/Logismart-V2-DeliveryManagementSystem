@@ -32,12 +32,10 @@ public class Recipient {
     @Column(name = "last_name", nullable = false, length = 100)
     private String lastName;
 
-    
-    
-    
+    @NotBlank(message = "Email is required")
     @Email(message = "Email must be valid")
     @Size(max = 150, message = "Email must not exceed 150 characters")
-    @Column(name = "email", nullable = true, length = 150)
+    @Column(name = "email", nullable = false, length = 150)
     private String email;
 
     @NotBlank(message = "Phone number is required")
@@ -70,7 +68,4 @@ public class Recipient {
         return firstName + " " + lastName;
     }
 
-    public boolean hasEmail() {
-        return email != null && !email.trim().isEmpty();
-    }
 }

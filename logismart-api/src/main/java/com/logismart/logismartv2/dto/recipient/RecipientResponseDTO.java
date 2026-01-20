@@ -20,8 +20,6 @@ public class RecipientResponseDTO {
 
     private String email;
 
-    private Boolean hasEmail;
-
     private String phone;
 
     private String address;
@@ -33,7 +31,6 @@ public class RecipientResponseDTO {
         this.lastName = lastName;
         this.fullName = firstName + " " + lastName;
         this.email = email;
-        this.hasEmail = email != null && !email.trim().isEmpty();
         this.phone = phone;
         this.address = address;
     }

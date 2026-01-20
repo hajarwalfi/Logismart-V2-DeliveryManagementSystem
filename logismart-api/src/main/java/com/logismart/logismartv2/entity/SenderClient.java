@@ -38,14 +38,12 @@ public class SenderClient {
     @Column(name = "email", nullable = false, unique = true, length = 150)
     private String email;
 
-    @NotBlank(message = "Phone number is required")
     @Size(max = 20, message = "Phone number must not exceed 20 characters")
-    @Column(name = "phone", nullable = false, length = 20)
+    @Column(name = "phone", nullable = true, length = 20)
     private String phone;
 
-    @NotBlank(message = "Address is required")
     @Size(max = 255, message = "Address must not exceed 255 characters")
-    @Column(name = "address", nullable = false, length = 255)
+    @Column(name = "address", nullable = true, length = 255)
     private String address;
 
     /**

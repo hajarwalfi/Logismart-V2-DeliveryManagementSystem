@@ -22,6 +22,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 /**
  * Security configuration for hybrid JWT + OAuth2 authentication
@@ -48,8 +51,18 @@ public class SecurityConfig {
                 // Enable CORS
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
 
+
+
                 // Disable CSRF (not needed for stateless API)
                 .csrf(AbstractHttpConfigurer::disable)
+
+                // Configure exception handling for API to return 401 instead of redirecting to login
+                .exceptionHandling(exception -> exception
+                        .defaultAuthenticationEntryPointFor(
+                                new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
+                                new AntPathRequestMatcher("/api/**")
+                        )
+                )
 
                 // Configure authorization rules
                 .authorizeHttpRequests(auth -> auth
@@ -61,7 +74,8 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/api-docs/**",
                                 "/v3/api-docs/**",
-                                "/swagger-ui.html"
+                                "/swagger-ui.html",
+                                "/api/public/**"
                         ).permitAll()
 
                         // All other requests require authentication

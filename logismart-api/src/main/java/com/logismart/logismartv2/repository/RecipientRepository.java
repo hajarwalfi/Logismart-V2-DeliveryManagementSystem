@@ -23,11 +23,6 @@ public interface RecipientRepository extends JpaRepository<Recipient, String> {
 
     List<Recipient> findByAddressContainingIgnoreCase(String keyword);
 
-    @Query("SELECT r FROM Recipient r WHERE r.email IS NOT NULL AND r.email <> ''")
-    List<Recipient> findRecipientsWithEmail();
-
-    @Query("SELECT r FROM Recipient r WHERE r.email IS NULL OR r.email = ''")
-    List<Recipient> findRecipientsWithoutEmail();
 
     @Query("SELECT COUNT(p) FROM Parcel p WHERE p.recipient.id = :recipientId")
     Long countParcelsByRecipientId(@Param("recipientId") String recipientId);

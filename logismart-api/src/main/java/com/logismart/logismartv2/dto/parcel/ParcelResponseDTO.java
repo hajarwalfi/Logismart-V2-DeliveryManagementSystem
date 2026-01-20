@@ -47,6 +47,12 @@ public class ParcelResponseDTO {
 
     private String recipientName;
 
+    private String recipientPhone;
+
+    private String recipientEmail;
+
+    private String recipientAddress;
+
     private String deliveryPersonId;
 
     private String deliveryPersonName;

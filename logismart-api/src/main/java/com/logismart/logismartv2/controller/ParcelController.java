@@ -2,12 +2,15 @@ package com.logismart.logismartv2.controller;
 
 import com.logismart.logismartv2.dto.deliveryhistory.DeliveryHistoryResponseDTO;
 import com.logismart.logismartv2.dto.parcel.ParcelCreateDTO;
+import com.logismart.logismartv2.dto.parcel.ParcelCreateWithRecipientDTO;
 import com.logismart.logismartv2.dto.parcel.ParcelResponseDTO;
 import com.logismart.logismartv2.dto.parcel.ParcelUpdateDTO;
 import com.logismart.logismartv2.entity.ParcelPriority;
 import com.logismart.logismartv2.entity.ParcelStatus;
 import com.logismart.logismartv2.exception.BadRequestException;
 import com.logismart.logismartv2.service.ParcelService;
+import com.logismart.security.entity.User;
+import com.logismart.security.service.CustomOAuth2User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -37,11 +40,23 @@ public class ParcelController {
 
     private final ParcelService parcelService;
 
+    private String extractUserId(org.springframework.security.core.Authentication authentication) {
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof User user) {
+            return user.getId();
+        } else if (principal instanceof CustomOAuth2User oAuth2User) {
+            return oAuth2User.getUser().getId();
+        }
+        throw new BadRequestException("Unable to determine user identity");
+    }
+
     @PostMapping
     @PreAuthorize("hasAnyRole('MANAGER', 'CLIENT')")
     @Operation(
             summary = "Create a new parcel",
             description = "Creates a new parcel with sender, recipient, and products. " +
+                    "For CLIENT role, senderClientId is automatically set from authenticated user. " +
+                    "For MANAGER role, senderClientId must be provided. " +
                     "Automatically creates product associations and initial delivery history."
     )
     @ApiResponses(value = {
@@ -50,15 +65,58 @@ public class ParcelController {
             @ApiResponse(responseCode = "404", description = "Sender, Recipient, or Product not found")
     })
     public ResponseEntity<ParcelResponseDTO> createParcel(
-            @Valid @RequestBody ParcelCreateDTO dto) {
+            @Valid @RequestBody ParcelCreateDTO dto,
+            org.springframework.security.core.Authentication authentication) {
+
+        // For CLIENT role, automatically set senderClientId from authenticated user
+        var authorities = authentication.getAuthorities();
+        boolean isClient = authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_CLIENT"));
+        boolean isManager = authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_MANAGER"));
+
+        if (isClient && !isManager) {
+            // Client must use their own senderClientId
+            String userId = extractUserId(authentication);
+            String senderClientId = parcelService.getSenderClientIdByUserId(userId);
+            if (senderClientId == null) {
+                throw new BadRequestException("No SenderClient profile found for your account. Please contact administrator.");
+            }
+            dto.setSenderClientId(senderClientId);
+            log.info("REST: CLIENT creating parcel - auto-set senderClientId: {}", senderClientId);
+        }
+
         log.info("REST: Creating new parcel for sender ID: {} to recipient ID: {}",
                 dto.getSenderClientId(), dto.getRecipientId());
         ParcelResponseDTO created = parcelService.create(dto);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
+    @PostMapping("/with-recipient")
+    @PreAuthorize("hasRole('CLIENT')")
+    @Operation(
+            summary = "Create a new parcel with recipient info (CLIENT only)",
+            description = "Creates a new parcel with recipient information inline. " +
+                    "The recipient is created automatically. " +
+                    "senderClientId is automatically set from authenticated user. " +
+                    "This endpoint is designed for CLIENT role to create delivery requests."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Parcel created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "404", description = "Product not found")
+    })
+    public ResponseEntity<ParcelResponseDTO> createParcelWithRecipient(
+            @Valid @RequestBody ParcelCreateWithRecipientDTO dto,
+            org.springframework.security.core.Authentication authentication) {
+
+        String userId = extractUserId(authentication);
+        log.info("REST: CLIENT creating parcel with recipient info - userId: {}", userId);
+
+        ParcelResponseDTO created = parcelService.createWithRecipient(dto, userId);
+        return new ResponseEntity<>(created, HttpStatus.CREATED);
+    }
+
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('MANAGER', 'CLIENT')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'CLIENT', 'LIVREUR')")
     @Operation(
             summary = "Get parcel by ID",
             description = "Retrieves a parcel by its unique identifier with all relationships loaded"
@@ -462,7 +520,7 @@ public class ParcelController {
     
 
     @GetMapping("/{id}/history")
-    @PreAuthorize("hasAnyRole('MANAGER', 'CLIENT')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'CLIENT', 'LIVREUR')")
     @Operation(
             summary = "Get parcel delivery history",
             description = "Retrieves the complete chronological timeline of all status changes for a parcel. " +
@@ -500,7 +558,7 @@ public class ParcelController {
 
 
         var authorities = authentication.getAuthorities();
-        String userId = ((com.logismart.security.entity.User) authentication.getPrincipal()).getId();
+        String userId = extractUserId(authentication);
 
         List<ParcelResponseDTO> parcels;
 
@@ -539,7 +597,7 @@ public class ParcelController {
             org.springframework.security.core.Authentication authentication) {
         log.info("REST: Delivery person updating parcel {} status to {}", id, status);
 
-        String userId = ((com.logismart.security.entity.User) authentication.getPrincipal()).getId();
+        String userId = extractUserId(authentication);
         ParcelResponseDTO updated = parcelService.updateParcelStatusForDeliveryPerson(id, status, userId);
 
         return ResponseEntity.ok(updated);
@@ -565,7 +623,7 @@ public class ParcelController {
         log.info("REST: Tracking parcel ID: {} for user: {}", id, authentication.getName());
 
         var authorities = authentication.getAuthorities();
-        String userId = ((com.logismart.security.entity.User) authentication.getPrincipal()).getId();
+        String userId = extractUserId(authentication);
 
 
         boolean hasAccess = authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_MANAGER"));

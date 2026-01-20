@@ -22,6 +22,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.List;
 
 @Service
@@ -209,14 +211,11 @@ public class DeliveryPersonService {
     public DeliveryPersonStatsDTO getStats(String id) {
         log.info("Calculating statistics for delivery person ID: {}", id);
 
-        
         DeliveryPerson deliveryPerson = deliveryPersonRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("DeliveryPerson", "id", id));
 
-        
         List<Parcel> allParcels = parcelRepository.findByDeliveryPersonId(id);
 
-        
         Long totalParcels = (long) allParcels.size();
         Double totalWeight = allParcels.stream()
                 .map(Parcel::getWeight)
@@ -235,19 +234,103 @@ public class DeliveryPersonService {
                 .filter(parcel -> parcel.getStatus() == ParcelStatus.IN_TRANSIT)
                 .count();
 
+        Long collectedParcels = allParcels.stream()
+                .filter(parcel -> parcel.getStatus() == ParcelStatus.COLLECTED)
+                .count();
+
+        Long inStockParcels = allParcels.stream()
+                .filter(parcel -> parcel.getStatus() == ParcelStatus.IN_STOCK)
+                .count();
+
+        // Monthly statistics
+        YearMonth currentMonth = YearMonth.now();
+        LocalDateTime startOfMonth = currentMonth.atDay(1).atStartOfDay();
+        LocalDateTime endOfMonth = currentMonth.atEndOfMonth().atTime(23, 59, 59);
+
+        List<Parcel> parcelsThisMonth = allParcels.stream()
+                .filter(parcel -> parcel.getCreatedAt() != null &&
+                        !parcel.getCreatedAt().isBefore(startOfMonth) &&
+                        !parcel.getCreatedAt().isAfter(endOfMonth))
+                .toList();
+
+        Long totalThisMonth = (long) parcelsThisMonth.size();
+        Long deliveredThisMonth = parcelsThisMonth.stream()
+                .filter(parcel -> parcel.getStatus() == ParcelStatus.DELIVERED)
+                .count();
+
+        // Success rate calculation
+        Double successRate = totalParcels > 0
+                ? (deliveredParcels.doubleValue() / totalParcels.doubleValue()) * 100.0
+                : 0.0;
+
+        // Average deliveries per day this month
+        int dayOfMonth = java.time.LocalDate.now().getDayOfMonth();
+        Double avgDeliveriesPerDay = dayOfMonth > 0
+                ? deliveredThisMonth.doubleValue() / dayOfMonth
+                : 0.0;
+
         String deliveryPersonName = deliveryPerson.getFirstName() + " " + deliveryPerson.getLastName();
 
-        log.info("Statistics for delivery person {}: {} parcels, {} kg total weight",
-                deliveryPersonName, totalParcels, totalWeight);
+        log.info("Statistics for delivery person {}: {} parcels, {} kg total weight, {}% success rate",
+                deliveryPersonName, totalParcels, totalWeight, String.format("%.2f", successRate));
 
-        return new DeliveryPersonStatsDTO(
-                id,
-                deliveryPersonName,
-                totalParcels,
-                totalWeight,
-                activeParcels,
-                deliveredParcels,
-                inTransitParcels
-        );
+        DeliveryPersonStatsDTO stats = new DeliveryPersonStatsDTO();
+        stats.setDeliveryPersonId(id);
+        stats.setDeliveryPersonName(deliveryPersonName);
+        stats.setTotalParcels(totalParcels);
+        stats.setTotalWeight(totalWeight);
+        stats.setActiveParcels(activeParcels);
+        stats.setDeliveredParcels(deliveredParcels);
+        stats.setInTransitParcels(inTransitParcels);
+        stats.setDeliveredThisMonth(deliveredThisMonth);
+        stats.setTotalThisMonth(totalThisMonth);
+        stats.setSuccessRate(successRate);
+        stats.setAvgDeliveriesPerDay(avgDeliveriesPerDay);
+        stats.setCollectedParcels(collectedParcels);
+        stats.setInStockParcels(inStockParcels);
+
+        return stats;
+    }
+
+    /**
+     * Find delivery person by user ID (for authenticated livreur)
+     */
+    @Transactional(readOnly = true)
+    public DeliveryPersonResponseDTO findByUserId(String userId) {
+        log.info("Finding delivery person by user ID: {}", userId);
+
+        DeliveryPerson deliveryPerson = deliveryPersonRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("DeliveryPerson", "userId", userId));
+
+        return deliveryPersonMapper.toResponseDTO(deliveryPerson);
+    }
+
+    /**
+     * Get statistics for delivery person by user ID
+     */
+    @Transactional(readOnly = true)
+    public DeliveryPersonStatsDTO getStatsByUserId(String userId) {
+        log.info("Getting statistics for delivery person with user ID: {}", userId);
+
+        DeliveryPerson deliveryPerson = deliveryPersonRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("DeliveryPerson", "userId", userId));
+
+        return getStats(deliveryPerson.getId());
+    }
+
+    /**
+     * Get delivery history for delivery person by user ID
+     */
+    @Transactional(readOnly = true)
+    public List<ParcelResponseDTO> getDeliveryHistoryByUserId(String userId) {
+        log.info("Getting delivery history for delivery person with user ID: {}", userId);
+
+        DeliveryPerson deliveryPerson = deliveryPersonRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("DeliveryPerson", "userId", userId));
+
+        List<Parcel> deliveredParcels = parcelRepository.findByDeliveryPersonIdAndStatus(
+                deliveryPerson.getId(), ParcelStatus.DELIVERED);
+
+        return parcelMapper.toResponseDTOList(deliveredParcels);
     }
 }

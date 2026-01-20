@@ -21,7 +21,6 @@ public interface RecipientMapper {
     Recipient toEntity(RecipientUpdateDTO dto);
 
     @Mapping(target = "fullName", expression = "java(entity.getFullName())")
-    @Mapping(target = "hasEmail", expression = "java(entity.hasEmail())")
     RecipientResponseDTO toResponseDTO(Recipient entity);
 
     List<RecipientResponseDTO> toResponseDTOList(List<Recipient> entities);

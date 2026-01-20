@@ -13,7 +13,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class DeliveryPersonUpdateDTO {
 
-    @NotNull(message = "Delivery person ID is required for update")
+    // ID is set by the controller from the path variable, not from request body
+    // Therefore, no @NotNull validation is needed here
     private String id;
 
     @NotBlank(message = "First name is required")

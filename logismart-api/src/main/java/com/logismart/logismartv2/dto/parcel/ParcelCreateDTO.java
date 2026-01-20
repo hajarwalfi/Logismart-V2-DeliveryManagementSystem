@@ -36,7 +36,8 @@ public class ParcelCreateDTO {
     @Size(max = 100, message = "Destination city must not exceed 100 characters")
     private String destinationCity;
 
-    @NotNull(message = "Sender client ID is required")
+    // For CLIENT role: auto-filled by backend from authenticated user
+    // For MANAGER role: must be provided in request
     private String senderClientId;
 
     @NotNull(message = "Recipient ID is required")

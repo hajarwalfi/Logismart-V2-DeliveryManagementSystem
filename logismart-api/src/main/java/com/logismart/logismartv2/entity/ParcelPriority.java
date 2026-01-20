@@ -4,10 +4,11 @@ public enum ParcelPriority {
 
     NORMAL("Normal", "Standard delivery (3-5 days)", 0),
 
+    HIGH("High", "High priority delivery (2-3 days)", 1),
 
-    URGENT("Urgent", "Expedited delivery (1-2 days)", 1),
+    URGENT("Urgent", "Expedited delivery (1-2 days)", 2),
 
-    EXPRESS("Express", "Express delivery (same/next day)", 2);
+    EXPRESS("Express", "Express delivery (same/next day)", 3);
 
     private final String displayName;
     private final String description;
